@@ -137,6 +137,9 @@
               required
               :error-message="errors.nome"
             />
+            <p class="mt-1 text-xs text-gray-500">
+              {{ form.nome.length }}/200 caracteres
+            </p>
           </div>
           
           <!-- Description -->
@@ -144,11 +147,14 @@
             <BaseInput
               v-model="form.descricao"
               type="textarea"
-              label="Descrição"
+              label="Descrição (Opcional)"
               placeholder="Descreva o evento"
               :rows="3"
               :error-message="errors.descricao"
             />
+            <p class="mt-1 text-xs text-gray-500">
+              {{ form.descricao.length }}/1000 caracteres
+            </p>
           </div>
           
           <!-- Event Date and Time (Brazilian Format) -->
@@ -174,6 +180,9 @@
             required
             :error-message="errors.local"
           />
+          <p class="mt-1 text-xs text-gray-500">
+            {{ form.local.length }}/300 caracteres
+          </p>
           
           <!-- Category -->
           <BaseInput
@@ -185,6 +194,9 @@
             :options="categoryOptions"
             :error-message="errors.categoria"
           />
+          <p class="mt-1 text-xs text-gray-500">
+            Categoria selecionada: <strong>{{ form.categoria || 'Nenhuma' }}</strong>
+          </p>
           
           <!-- Capacity -->
           <BaseInput
@@ -214,7 +226,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
@@ -286,15 +298,24 @@ const statusOptions = [
 
 const categoryOptions = [
   { value: 'FUTEBOL', label: 'Futebol' },
+  { value: 'BASQUETEBOL', label: 'Basquetebol' },
+  { value: 'VOLEIBOL', label: 'Voleibol' },
   { value: 'MUSICA', label: 'Música' },
   { value: 'TEATRO', label: 'Teatro' },
-  { value: 'CONFERENCIA', label: 'Conferência' },
+  { value: 'DESPORTO', label: 'Desporto' },
   { value: 'OUTROS', label: 'Outros' }
 ]
 
 // Computed
 const modalTitle = computed(() => {
   return isEditing.value ? 'Editar Evento' : 'Novo Evento'
+})
+
+// Watch categoria changes (apenas para debug se necessário)
+watch(() => form.categoria, (newCategoria) => {
+  if (newCategoria) {
+    console.log('✅ Categoria selecionada:', newCategoria)
+  }
 })
 
 // Methods
@@ -442,11 +463,22 @@ const validateForm = () => {
   clearAllErrors()
   let isValid = true
 
+  // Nome (max 200 caracteres)
   if (!form.nome.trim()) {
     errors.nome = 'Nome é obrigatório'
     isValid = false
+  } else if (form.nome.length > 200) {
+    errors.nome = 'Nome deve ter no máximo 200 caracteres'
+    isValid = false
   }
 
+  // Descrição (max 1000 caracteres, opcional)
+  if (form.descricao && form.descricao.length > 1000) {
+    errors.descricao = 'Descrição deve ter no máximo 1000 caracteres'
+    isValid = false
+  }
+
+  // Data e Hora (obrigatória)
   if (!form.dataHora) {
     errors.dataHora = 'Data e hora são obrigatórias'
     isValid = false
@@ -483,16 +515,28 @@ const validateForm = () => {
     }
   }
 
+  // Local (max 300 caracteres)
   if (!form.local.trim()) {
     errors.local = 'Local é obrigatório'
     isValid = false
-  }
-
-  if (!form.categoria) {
-    errors.categoria = 'Categoria é obrigatória'
+  } else if (form.local.length > 300) {
+    errors.local = 'Local deve ter no máximo 300 caracteres'
     isValid = false
   }
 
+  // Categoria (obrigatória, deve ser um dos valores aceitos)
+  if (!form.categoria) {
+    errors.categoria = 'Categoria é obrigatória'
+    isValid = false
+  } else {
+    const validCategories = ['FUTEBOL', 'BASQUETEBOL', 'VOLEIBOL', 'MUSICA', 'TEATRO', 'DESPORTO', 'OUTROS']
+    if (!validCategories.includes(form.categoria)) {
+      errors.categoria = 'Categoria inválida'
+      isValid = false
+    }
+  }
+
+  // Capacidade Total
   if (!form.capacidadeTotal || form.capacidadeTotal <= 0) {
     errors.capacidadeTotal = 'Capacidade deve ser maior que zero'
     isValid = false
@@ -521,9 +565,10 @@ const submitForm = async () => {
       ativo: form.ativo
     }
     
-    console.log('Form data before submission:', form)
-    console.log('Event data being sent to API:', eventData)
-    console.log('dataHora format:', eventData.dataHora)
+    console.log('✅ Form data before submission:', form)
+    console.log('✅ Event data being sent to API:', eventData)
+    console.log('✅ Selected categoria:', form.categoria)
+    console.log('✅ dataHora format:', eventData.dataHora)
 
     if (isEditing.value) {
       const currentEvent = eventsStore.currentEvent
@@ -531,7 +576,9 @@ const submitForm = async () => {
         await eventsStore.updateEvent(currentEvent.id, eventData)
       }
     } else {
-      await eventsStore.createEvent(eventData as CreateEventRequest)
+      const createdEvent = await eventsStore.createEvent(eventData as CreateEventRequest)
+      console.log('✅ Event created successfully:', createdEvent)
+      console.log('✅ Created event categoria:', createdEvent?.categoria)
     }
 
     closeModal()
@@ -543,8 +590,8 @@ const submitForm = async () => {
       console.warn('Warning: Could not reload events after creation/update:', reloadError)
     }
   } catch (error: any) {
-    console.error('Error submitting form:', error)
-    console.error('Error response data:', error.response?.data)
+    console.error('❌ Error submitting form:', error)
+    console.error('❌ Error response data:', error.response?.data)
   } finally {
     formLoading.value = false
   }

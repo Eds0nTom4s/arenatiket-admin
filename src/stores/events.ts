@@ -34,7 +34,7 @@ export const useEventsStore = defineStore('events', () => {
           ...event,
           // Ensure required properties exist with defaults
           status: event.status || 'ATIVO',
-          categoria: event.categoria || 'OUTROS', 
+          categoria: event.categoria || 'OUTROS', // Fallback apenas para eventos muito antigos
           bilhetesVendidos: event.bilhetesVendidos || 0,
           capacidadeTotal: event.capacidadeTotal || 100,
           // Handle both dataEvento and dataHora fields
@@ -87,7 +87,12 @@ export const useEventsStore = defineStore('events', () => {
   const createEvent = async (eventData: CreateEventRequest) => {
     try {
       loading.value = true
+      console.log('🚀 Creating event with data:', eventData)
+      console.log('🚀 Event categoria being sent:', eventData.categoria)
+      
       const newEvent = await ApiService.createEvent(eventData)
+      console.log('✅ Event created, received back:', newEvent)
+      console.log('✅ Received categoria:', newEvent?.categoria)
       
       // Ensure events array is initialized
       if (!Array.isArray(events.value)) {
@@ -102,7 +107,7 @@ export const useEventsStore = defineStore('events', () => {
       
       return newEvent
     } catch (error) {
-      console.error('Error creating event:', error)
+      console.error('❌ Error creating event:', error)
       toastStore.showError('Erro ao criar evento. Tente novamente.')
       throw error
     } finally {
@@ -113,7 +118,12 @@ export const useEventsStore = defineStore('events', () => {
   const updateEvent = async (id: number, eventData: Partial<CreateEventRequest>) => {
     try {
       loading.value = true
+      console.log('🔄 Updating event with data:', eventData)
+      console.log('🔄 Event categoria being sent:', eventData.categoria)
+      
       const updatedEvent = await ApiService.updateEvent(id, eventData)
+      console.log('✅ Event updated, received back:', updatedEvent)
+      console.log('✅ Updated categoria:', updatedEvent?.categoria)
       
       // Ensure events array is initialized
       if (!Array.isArray(events.value)) {
@@ -133,7 +143,7 @@ export const useEventsStore = defineStore('events', () => {
       
       return updatedEvent
     } catch (error) {
-      console.error('Error updating event:', error)
+      console.error('❌ Error updating event:', error)
       toastStore.showError('Erro ao atualizar evento. Tente novamente.')
       throw error
     } finally {

@@ -50,7 +50,8 @@ export interface Event {
   id: number
   nome: string
   descricao: string
-  dataEvento: string
+  dataEvento?: string  // Legacy field
+  dataHora: string     // Primary field
   local: string
   categoria: string
   status: 'ATIVO' | 'INATIVO' | 'ESGOTADO'
@@ -60,16 +61,18 @@ export interface Event {
   precoMaximo?: number
   imagemUrl?: string
   dataCriacao?: string
+  ativo?: boolean
 }
 
 export interface CreateEventRequest {
   nome: string
-  descricao: string
-  dataEvento: string
+  descricao?: string
+  dataHora: string  // Brazilian format: dd/MM/yyyy HH:mm
   local: string
-  categoria: string
-  capacidadeTotal: number
+  categoria?: string
+  capacidadeTotal?: number
   imagemUrl?: string
+  ativo?: boolean
 }
 
 export interface Ticket {

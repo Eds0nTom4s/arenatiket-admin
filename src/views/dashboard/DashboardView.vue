@@ -343,12 +343,14 @@ const formatNumber = (num: number) => {
 }
 
 const formatEventDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('pt-BR', {
+  return new Date(dateString).toLocaleString('pt-PT', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false // 24-hour format
   })
 }
 
@@ -364,11 +366,27 @@ const getEventStatusColor = (status: string) => {
 // Load data on mount
 onMounted(async () => {
   try {
+    // Ensure authentication is properly set up before making API calls
+    if (!authStore.isAuthenticated) {
+      console.log('Not authenticated, initializing auth...')
+      authStore.initializeAuth()
+    }
+    
+    // Verify token is available
+    if (!authStore.verifyToken()) {
+      console.error('No valid token available, cannot load dashboard data')
+      return
+    }
+    
+    console.log('Loading dashboard data...')
+    
     // Load recent events
     await eventsStore.fetchEvents({ page: 0, size: 10, status: 'ATIVO' })
     
-    // Load ticket counts
+    // Load ticket counts  
     await ticketsStore.fetchTicketCounts()
+    
+    console.log('Dashboard data loaded successfully')
   } catch (error) {
     console.error('Error loading dashboard data:', error)
   }

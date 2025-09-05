@@ -33,6 +33,9 @@ apiClient.interceptors.request.use(
     const token = localStorage.getItem('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
+      console.log('Adding token to request:', token.substring(0, 10) + '...')
+    } else {
+      console.log('No token found for request')
     }
     return config
   },
@@ -47,6 +50,14 @@ apiClient.interceptors.response.use(
     return response
   },
   (error: AxiosError<ApiResponse>) => {
+    console.error('API Error:', {
+      status: error.response?.status,
+      url: error.config?.url,
+      method: error.config?.method,
+      data: error.response?.data,
+      headers: error.config?.headers
+    })
+    
     // Use import dinâmico para evitar dependência circular
     const showError = (message: string) => {
       // Fallback para console se o toast store não estiver disponível
@@ -62,6 +73,8 @@ apiClient.interceptors.response.use(
     
     if (error.response?.status === 401) {
       // Token expirado ou inválido
+      const token = localStorage.getItem('token')
+      console.error('401 Unauthorized - Token:', token ? token.substring(0, 10) + '...' : 'No token')
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       showError('Sessão expirada. Faça login novamente.')
@@ -149,6 +162,8 @@ export class ApiService {
   }
 
   static async createEvent(eventData: CreateEventRequest): Promise<Event> {
+    console.log('API Service - Creating event with data:', eventData)
+    console.log('API Service - Event data keys:', Object.keys(eventData))
     const response = await apiClient.post<ApiResponse<Event>>('/admin/eventos', eventData)
     return response.data.dados
   }

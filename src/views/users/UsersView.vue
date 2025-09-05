@@ -278,7 +278,7 @@ const clearFilters = () => {
 }
 
 // Debounced search
-let searchTimeout: NodeJS.Timeout
+let searchTimeout: number
 const debouncedSearch = () => {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
@@ -293,7 +293,7 @@ const changePage = (page: number) => {
 
 const formatDate = (dateString: string) => {
   if (!dateString) return '-'
-  return new Date(dateString).toLocaleDateString('pt-BR', {
+  return new Date(dateString).toLocaleDateString('pt-PT', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric'

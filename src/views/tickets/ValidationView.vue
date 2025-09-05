@@ -212,24 +212,28 @@ const clearValidation = () => {
 
 const formatDate = (dateString?: string) => {
   if (!dateString) return '-'
-  return new Date(dateString).toLocaleDateString('pt-BR', {
+  return new Date(dateString).toLocaleString('pt-PT', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false // 24-hour format
   })
 }
 
 const formatEventDate = (dateString?: string) => {
   if (!dateString) return '-'
-  return new Date(dateString).toLocaleDateString('pt-BR', {
+  return new Date(dateString).toLocaleString('pt-PT', {
     weekday: 'long',
     day: '2-digit',
     month: 'long',
     year: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false // 24-hour format
   })
 }
 

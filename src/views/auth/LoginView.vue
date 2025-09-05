@@ -136,7 +136,14 @@ const handleSubmit = async () => {
     loading.value = true
     clearAllErrors()
     
+    console.log('Attempting login...')
     await authStore.login(form)
+    console.log('Login successful, redirecting...')
+    
+    // Ensure token is properly set before redirecting
+    if (!authStore.isAuthenticated) {
+      throw new Error('Authentication failed - no token set')
+    }
     
     // Redirect to intended page or dashboard
     const redirectTo = route.query.redirect as string || '/'

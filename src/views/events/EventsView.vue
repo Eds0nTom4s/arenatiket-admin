@@ -62,26 +62,33 @@
       @page-change="changePage"
     >
       <!-- Custom cell for status -->
-      <template #cell(status)="{ value }">
+      <template #cell(status)="{ item }">
         <span
           class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-          :class="getStatusClass(value)"
+          :class="getStatusClass(item.status || 'ATIVO')"
         >
-          {{ value }}
+          {{ item.status || 'ATIVO' }}
+        </span>
+      </template>
+      
+      <!-- Custom cell for categoria -->
+      <template #cell(categoria)="{ item }">
+        <span class="text-sm text-gray-900">
+          {{ item.categoria || 'OUTROS' }}
         </span>
       </template>
       
       <!-- Custom cell for event date -->
-      <template #cell(dataEvento)="{ value }">
+      <template #cell(dataEvento)="{ item }">
         <span class="text-sm text-gray-900">
-          {{ formatEventDate(value) }}
+          {{ formatEventDate(item.dataHora || item.dataEvento) }}
         </span>
       </template>
       
       <!-- Custom cell for capacity -->
       <template #cell(capacidade)="{ item }">
         <div class="text-sm">
-          <div class="text-gray-900">{{ item.bilhetesVendidos }}/{{ item.capacidadeTotal }}</div>
+          <div class="text-gray-900">{{ item.bilhetesVendidos || 0 }}/{{ item.capacidadeTotal || 100 }}</div>
           <div class="text-gray-500">{{ getOccupancyPercentage(item) }}%</div>
         </div>
       </template>
@@ -144,14 +151,19 @@
             />
           </div>
           
-          <!-- Event Date -->
-          <BaseInput
-            v-model="form.dataEvento"
-            type="datetime-local"
-            label="Data e Hora"
-            required
-            :error-message="errors.dataEvento"
-          />
+          <!-- Event Date and Time (Brazilian Format) -->
+          <div class="sm:col-span-2">
+            <BaseInput
+              v-model="form.dataHora"
+              type="datetime-brazilian"
+              label="Data e Hora (DD/MM/YYYY HH:MM)"
+              required
+              :error-message="errors.dataHora"
+            />
+            <p class="mt-1 text-xs text-gray-500">
+              Formato brasileiro: DD/MM/YYYY HH:MM (sem segundos)
+            </p>
+          </div>
           
           <!-- Location -->
           <BaseInput
@@ -227,18 +239,19 @@ const formLoading = ref(false)
 const form = reactive({
   nome: '',
   descricao: '',
-  dataEvento: '',
+  dataHora: '',
   local: '',
   categoria: '',
   capacidadeTotal: 0,
-  imagemUrl: ''
+  imagemUrl: '',
+  ativo: true
 })
 
 // Form errors
 const errors = reactive({
   nome: '',
   descricao: '',
-  dataEvento: '',
+  dataHora: '',
   local: '',
   categoria: '',
   capacidadeTotal: '',
@@ -314,13 +327,30 @@ const changePage = (page: number) => {
 }
 
 const formatEventDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
+  // Handle both ISO format and Brazilian format
+  let date: Date;
+  
+  if (dateString.includes('T')) {
+    // ISO format
+    date = new Date(dateString);
+  } else if (dateString.includes('/')) {
+    // Brazilian format: dd/MM/yyyy HH:mm
+    const [datePart, timePart] = dateString.split(' ');
+    const [day, month, year] = datePart.split('/');
+    const [hours, minutes] = timePart.split(':');
+    date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hours), parseInt(minutes));
+  } else {
+    date = new Date(dateString);
+  }
+  
+  // Always return Brazilian format: dd/MM/yyyy HH:mm
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  
+  return `${day}/${month}/${year} ${hours}:${minutes}`;
 }
 
 const getStatusClass = (status: string) => {
@@ -333,8 +363,10 @@ const getStatusClass = (status: string) => {
 }
 
 const getOccupancyPercentage = (event: Event) => {
-  if (event.capacidadeTotal === 0) return 0
-  return Math.round((event.bilhetesVendidos / event.capacidadeTotal) * 100)
+  if (!event.capacidadeTotal || event.capacidadeTotal === 0) return 0
+  const vendidos = event.bilhetesVendidos || 0
+  const capacidade = event.capacidadeTotal || 100
+  return Math.round((vendidos / capacidade) * 100)
 }
 
 const viewEvent = (event: Event) => {
@@ -352,11 +384,31 @@ const openEditModal = (event: Event) => {
   isEditing.value = true
   form.nome = event.nome
   form.descricao = event.descricao
-  form.dataEvento = event.dataEvento.substring(0, 16) // Format for datetime-local
+  
+  // Convert from ISO or existing format to Brazilian format
+  if (event.dataEvento || event.dataHora) {
+    const dateValue = event.dataHora || event.dataEvento
+    
+    if (dateValue.includes('T')) {
+      // Convert from ISO format
+      const date = new Date(dateValue)
+      const day = date.getDate().toString().padStart(2, '0')
+      const month = (date.getMonth() + 1).toString().padStart(2, '0')
+      const year = date.getFullYear()
+      const hours = date.getHours().toString().padStart(2, '0')
+      const minutes = date.getMinutes().toString().padStart(2, '0')
+      form.dataHora = `${day}/${month}/${year} ${hours}:${minutes}`
+    } else {
+      // Already in Brazilian format
+      form.dataHora = dateValue
+    }
+  }
+  
   form.local = event.local
   form.categoria = event.categoria
   form.capacidadeTotal = event.capacidadeTotal
   form.imagemUrl = event.imagemUrl || ''
+  form.ativo = event.ativo !== false // Default to true if undefined
   eventsStore.setCurrentEvent(event)
   showModal.value = true
 }
@@ -370,11 +422,12 @@ const closeModal = () => {
 const resetForm = () => {
   form.nome = ''
   form.descricao = ''
-  form.dataEvento = ''
+  form.dataHora = ''
   form.local = ''
   form.categoria = ''
   form.capacidadeTotal = 0
   form.imagemUrl = ''
+  form.ativo = true
   clearAllErrors()
 }
 
@@ -393,9 +446,40 @@ const validateForm = () => {
     isValid = false
   }
 
-  if (!form.dataEvento) {
-    errors.dataEvento = 'Data e hora são obrigatórias'
+  if (!form.dataHora) {
+    errors.dataHora = 'Data e hora são obrigatórias'
     isValid = false
+  } else {
+    // Validate Brazilian date format (dd/MM/yyyy HH:mm)
+    const brazilianDateRegex = /^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})$/
+    
+    if (!brazilianDateRegex.test(form.dataHora)) {
+      errors.dataHora = 'Formato inválido. Use: DD/MM/YYYY HH:MM'
+      isValid = false
+    } else {
+      // Parse the Brazilian format and validate if it's a future date
+      const [datePart, timePart] = form.dataHora.split(' ')
+      const [day, month, year] = datePart.split('/')
+      const [hours, minutes] = timePart.split(':')
+      
+      const selectedDate = new Date(
+        parseInt(year),
+        parseInt(month) - 1, // Month is 0-indexed
+        parseInt(day),
+        parseInt(hours),
+        parseInt(minutes)
+      )
+      
+      const now = new Date()
+      
+      if (isNaN(selectedDate.getTime())) {
+        errors.dataHora = 'Data inválida'
+        isValid = false
+      } else if (selectedDate <= now) {
+        errors.dataHora = 'A data deve ser no futuro'
+        isValid = false
+      }
+    }
   }
 
   if (!form.local.trim()) {
@@ -424,10 +508,21 @@ const submitForm = async () => {
   try {
     formLoading.value = true
 
+    // Send data in the format expected by backend
     const eventData = {
-      ...form,
-      dataEvento: new Date(form.dataEvento).toISOString()
+      nome: form.nome,
+      descricao: form.descricao,
+      dataHora: form.dataHora, // Brazilian format: dd/MM/yyyy HH:mm
+      local: form.local,
+      categoria: form.categoria,
+      capacidadeTotal: form.capacidadeTotal,
+      imagemUrl: form.imagemUrl,
+      ativo: form.ativo
     }
+    
+    console.log('Form data before submission:', form)
+    console.log('Event data being sent to API:', eventData)
+    console.log('dataHora format:', eventData.dataHora)
 
     if (isEditing.value) {
       const currentEvent = eventsStore.currentEvent
@@ -439,16 +534,27 @@ const submitForm = async () => {
     }
 
     closeModal()
-    await loadEvents()
+    
+    // Reload events to ensure consistency
+    try {
+      await loadEvents()
+    } catch (reloadError) {
+      console.warn('Warning: Could not reload events after creation/update:', reloadError)
+    }
   } catch (error: any) {
     console.error('Error submitting form:', error)
+    console.error('Error response data:', error.response?.data)
   } finally {
     formLoading.value = false
   }
 }
 
 // Load data on mount
-onMounted(() => {
-  loadEvents()
+onMounted(async () => {
+  try {
+    await loadEvents()
+  } catch (error) {
+    console.error('Error loading events on mount:', error)
+  }
 })
 </script>

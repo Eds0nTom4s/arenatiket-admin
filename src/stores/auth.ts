@@ -44,12 +44,16 @@ export const useAuthStore = defineStore('auth', () => {
         throw new Error('Dados do usuário incompletos na resposta da API')
       }
       
+      // Store in localStorage FIRST
+      localStorage.setItem('token', response.token)
+      localStorage.setItem('user', JSON.stringify(usuario))
+      
+      // Then update reactive state
       token.value = response.token
       user.value = usuario
       
-      // Store in localStorage
-      localStorage.setItem('token', response.token)
-      localStorage.setItem('user', JSON.stringify(usuario))
+      // Wait a bit to ensure token is available for next requests
+      await new Promise(resolve => setTimeout(resolve, 100))
       
       toastStore.showSuccess(`Bem-vindo, ${usuario.nome}!`)
       
@@ -98,6 +102,19 @@ export const useAuthStore = defineStore('auth', () => {
     return permissions.some(permission => hasPermission(permission as any))
   }
 
+  const verifyToken = () => {
+    // Verify that we have both token and user data
+    const storedToken = localStorage.getItem('token')
+    const storedUser = localStorage.getItem('user')
+    
+    if (storedToken && storedUser && !token.value) {
+      // Re-initialize if data exists but reactive state is missing
+      initializeAuth()
+    }
+    
+    return !!token.value && !!user.value
+  }
+
   return {
     user,
     token,
@@ -110,6 +127,7 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     initializeAuth,
     hasPermission,
-    hasAnyPermission
+    hasAnyPermission,
+    verifyToken
   }
 })

@@ -54,11 +54,11 @@
       :data="events"
       :loading="loading"
       :pagination="pagination"
-      :show-edit="authStore.isAdmin"
+      :show-actions="false"
+      :show-edit="false"
       :show-delete="false"
       empty-title="Nenhum evento encontrado"
       empty-message="Não há eventos cadastrados no sistema."
-      @edit="openEditModal"
       @page-change="changePage"
     >
       <!-- Custom cell for status -->
@@ -94,8 +94,8 @@
       </template>
       
       <!-- Custom actions -->
-      <template #actions="{ item }">
-        <div class="flex items-center space-x-2">
+      <template #cell(acoes)="{ item }">
+        <div class="flex items-center justify-end space-x-2">
           <BaseButton
             @click="viewEvent(item)"
             text="Ver"
@@ -156,12 +156,12 @@
             <BaseInput
               v-model="form.dataHora"
               type="datetime-brazilian"
-              label="Data e Hora (DD/MM/YYYY HH:MM)"
+              label="Data e Hora do Evento"
               required
               :error-message="errors.dataHora"
             />
-            <p class="mt-1 text-xs text-gray-500">
-              Formato brasileiro: DD/MM/YYYY HH:MM (sem segundos)
+            <p class="mt-2 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
+              ℹ️ Selecione a data e hora em campos separados para maior precisão
             </p>
           </div>
           
@@ -273,7 +273,8 @@ const columns = [
   { key: 'local', label: 'Local' },
   { key: 'categoria', label: 'Categoria' },
   { key: 'status', label: 'Status' },
-  { key: 'capacidade', label: 'Ocupação' }
+  { key: 'capacidade', label: 'Ocupação' },
+  { key: 'acoes', label: 'Ações' }
 ]
 
 // Options
@@ -387,9 +388,9 @@ const openEditModal = (event: Event) => {
   
   // Convert from ISO or existing format to Brazilian format
   if (event.dataEvento || event.dataHora) {
-    const dateValue = event.dataHora || event.dataEvento
+    const dateValue = event.dataHora || event.dataEvento || ''
     
-    if (dateValue.includes('T')) {
+    if (dateValue && dateValue.includes('T')) {
       // Convert from ISO format
       const date = new Date(dateValue)
       const day = date.getDate().toString().padStart(2, '0')
@@ -398,7 +399,7 @@ const openEditModal = (event: Event) => {
       const hours = date.getHours().toString().padStart(2, '0')
       const minutes = date.getMinutes().toString().padStart(2, '0')
       form.dataHora = `${day}/${month}/${year} ${hours}:${minutes}`
-    } else {
+    } else if (dateValue) {
       // Already in Brazilian format
       form.dataHora = dateValue
     }

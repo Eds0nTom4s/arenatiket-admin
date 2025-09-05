@@ -92,44 +92,84 @@
       @blur="handleBlur"
     />
     
-    <!-- Brazilian DateTime Input (DD/MM/YYYY HH:MM) -->
-    <div v-else-if="type === 'datetime-brazilian'" class="grid grid-cols-2 gap-2">
-      <!-- Date Input (DD/MM/YYYY) -->
-      <div>
-        <input
-          :id="inputId + '_date'"
-          v-model="dateValue"
-          type="date"
-          :disabled="disabled"
-          :readonly="readonly"
-          :required="required"
-          class="input-field w-full"
-          :class="[
-            errorMessage ? 'border-red-300 focus:ring-red-500' : '',
-            disabled ? 'bg-gray-100 cursor-not-allowed' : ''
-          ]"
-          @input="updateDateTime"
-          @blur="handleBlur"
-        />
+    <!-- Brazilian DateTime Input usando Vue Datepicker -->
+    <div v-else-if="type === 'datetime-brazilian'" class="space-y-3">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Campo de Data -->
+        <div class="space-y-1">
+          <label class="block text-sm font-medium text-gray-700">
+            📅 Data do Evento
+          </label>
+          <VueDatePicker
+            v-model="dateOnlyValue"
+            :format="'dd/MM/yyyy'"
+            :enable-time-picker="false"
+            :auto-apply="true"
+            :placeholder="'Selecione a data'"
+            :required="required"
+            :disabled="disabled"
+            :readonly="readonly"
+            locale="pt"
+            class="w-full"
+            @update:model-value="updateDateOnly"
+            @blur="handleBlur"
+          >
+            <template #input-icon>
+              <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+            </template>
+          </VueDatePicker>
+        </div>
+        
+        <!-- Campo de Hora -->
+        <div class="space-y-1">
+          <label class="block text-sm font-medium text-gray-700">
+            🕐 Hora do Evento
+          </label>
+          <VueDatePicker
+            v-model="timeOnlyValue"
+            time-picker
+            :is24="true"
+            :auto-apply="true"
+            :placeholder="'Selecione a hora'"
+            :required="required"
+            :disabled="disabled"
+            :readonly="readonly"
+            locale="pt"
+            class="w-full"
+            @update:model-value="updateTimeOnly"
+            @blur="handleBlur"
+          >
+            <template #input-icon>
+              <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </template>
+          </VueDatePicker>
+        </div>
       </div>
       
-      <!-- Time Input (HH:MM) -->
-      <div>
-        <input
-          :id="inputId + '_time'"
-          v-model="timeValue"
-          type="time"
-          :disabled="disabled"
-          :readonly="readonly"
-          :required="required"
-          class="input-field w-full"
-          :class="[
-            errorMessage ? 'border-red-300 focus:ring-red-500' : '',
-            disabled ? 'bg-gray-100 cursor-not-allowed' : ''
-          ]"
-          @input="updateDateTime"
-          @blur="handleBlur"
-        />
+      <!-- Preview da Data/Hora Selecionada -->
+      <div v-if="dateOnlyValue && timeOnlyValue" class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+        <div class="flex items-center space-x-2">
+          <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+          </svg>
+          <span class="text-sm font-medium text-blue-800">
+            Data e Hora Selecionadas:
+          </span>
+          <span class="text-sm font-semibold text-blue-900 bg-blue-100 px-2 py-1 rounded">
+            {{ formatPreview() }}
+          </span>
+        </div>
+      </div>
+      
+      <div class="text-xs text-gray-500 flex items-center space-x-1">
+        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+        </svg>
+        <span>Campos separados: Data (DD/MM/AAAA) + Hora (HH:MM)</span>
       </div>
     </div>
     
@@ -174,6 +214,8 @@
 
 <script setup lang="ts">
 import { computed, useId, ref, watch } from 'vue'
+import VueDatePicker from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
 
 interface Option {
   value: any
@@ -223,55 +265,130 @@ const emit = defineEmits<{
 
 const inputId = useId()
 
-// For datetime-european type
-const dateValue = ref('')
-const timeValue = ref('')
+// For Vue Datepicker
+const datePickerValue = ref<Date | null>(null)
+const dateOnlyValue = ref<Date | null>(null)
+const timeOnlyValue = ref<{ hours: number; minutes: number; seconds?: number } | null>(null)
 
 const inputValue = computed({
   get: () => props.modelValue,
   set: (value) => emit('update:modelValue', value)
 })
 
-// Watch for changes in modelValue to update date/time fields
-watch(() => props.modelValue, (newValue) => {
-  if (props.type === 'datetime-brazilian' && newValue) {
-    // Handle both ISO string and Brazilian format
-    let date: Date;
-    
-    if (newValue.includes('T')) {
-      // ISO format: 2025-09-13T15:30:00
-      date = new Date(newValue);
-    } else if (newValue.includes('/')) {
-      // Brazilian format: 13/09/2025 15:30
-      const [datePart, timePart] = newValue.split(' ');
-      const [day, month, year] = datePart.split('/');
-      const [hours, minutes] = timePart.split(':');
-      date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hours), parseInt(minutes));
-    } else {
-      date = new Date(newValue);
+// Convert Brazilian format string to Date object
+const parseBrazilianDate = (brazilianDateString: string): Date | null => {
+  if (!brazilianDateString) return null
+  
+  try {
+    if (brazilianDateString.includes('T')) {
+      // ISO format
+      return new Date(brazilianDateString)
+    } else if (brazilianDateString.includes('/')) {
+      // Brazilian format: DD/MM/YYYY HH:MM
+      const [datePart, timePart] = brazilianDateString.split(' ')
+      if (datePart && timePart) {
+        const [day, month, year] = datePart.split('/')
+        const [hours, minutes] = timePart.split(':')
+        return new Date(
+          parseInt(year),
+          parseInt(month) - 1,
+          parseInt(day),
+          parseInt(hours),
+          parseInt(minutes)
+        )
+      }
     }
-    
-    if (!isNaN(date.getTime())) {
-      // Format date as YYYY-MM-DD for date input
-      dateValue.value = date.toISOString().split('T')[0];
-      // Format time as HH:MM for time input (without seconds)
-      const hours = date.getHours().toString().padStart(2, '0');
-      const minutes = date.getMinutes().toString().padStart(2, '0');
-      timeValue.value = `${hours}:${minutes}`;
+    return new Date(brazilianDateString)
+  } catch {
+    return null
+  }
+}
+
+// Convert Date object to Brazilian format string
+const formatToBrazilian = (date: Date): string => {
+  const day = date.getDate().toString().padStart(2, '0')
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  const year = date.getFullYear()
+  const hours = date.getHours().toString().padStart(2, '0')
+  const minutes = date.getMinutes().toString().padStart(2, '0')
+  
+  return `${day}/${month}/${year} ${hours}:${minutes}`
+}
+
+// Format preview for separated fields
+const formatPreview = (): string => {
+  if (!dateOnlyValue.value || !timeOnlyValue.value) return ''
+  
+  const day = dateOnlyValue.value.getDate().toString().padStart(2, '0')
+  const month = (dateOnlyValue.value.getMonth() + 1).toString().padStart(2, '0')
+  const year = dateOnlyValue.value.getFullYear()
+  const hours = timeOnlyValue.value.hours.toString().padStart(2, '0')
+  const minutes = timeOnlyValue.value.minutes.toString().padStart(2, '0')
+  
+  return `${day}/${month}/${year} ${hours}:${minutes}`
+}
+
+// Watch for changes in modelValue to update datepicker
+watch(() => props.modelValue, (newValue) => {
+  if (props.type === 'datetime-brazilian') {
+    const parsedDate = parseBrazilianDate(newValue)
+    if (parsedDate) {
+      // Update combined datepicker
+      datePickerValue.value = parsedDate
+      
+      // Update separated fields
+      dateOnlyValue.value = new Date(parsedDate.getFullYear(), parsedDate.getMonth(), parsedDate.getDate())
+      timeOnlyValue.value = {
+        hours: parsedDate.getHours(),
+        minutes: parsedDate.getMinutes()
+      }
+    } else {
+      datePickerValue.value = null
+      dateOnlyValue.value = null
+      timeOnlyValue.value = null
     }
   }
 }, { immediate: true })
 
-// Update datetime when date or time changes
-const updateDateTime = () => {
-  if (props.type === 'datetime-brazilian' && dateValue.value && timeValue.value) {
-    const [year, month, day] = dateValue.value.split('-');
-    const [hours, minutes] = timeValue.value.split(':');
+// Update Brazilian datetime when datepicker changes
+const updateBrazilianDateTime = (selectedDate: Date | null) => {
+  if (props.type === 'datetime-brazilian' && selectedDate) {
+    const brazilianFormat = formatToBrazilian(selectedDate)
+    emit('update:modelValue', brazilianFormat)
+  } else if (!selectedDate) {
+    emit('update:modelValue', '')
+  }
+}
+
+// Update when date field changes
+const updateDateOnly = (selectedDate: Date | null) => {
+  if (props.type === 'datetime-brazilian') {
+    dateOnlyValue.value = selectedDate
+    updateSeparatedDateTime()
+  }
+}
+
+// Update when time field changes
+const updateTimeOnly = (selectedTime: { hours: number; minutes: number; seconds?: number } | null) => {
+  if (props.type === 'datetime-brazilian') {
+    timeOnlyValue.value = selectedTime
+    updateSeparatedDateTime()
+  }
+}
+
+// Combine date and time into Brazilian format
+const updateSeparatedDateTime = () => {
+  if (dateOnlyValue.value && timeOnlyValue.value) {
+    const day = dateOnlyValue.value.getDate().toString().padStart(2, '0')
+    const month = (dateOnlyValue.value.getMonth() + 1).toString().padStart(2, '0')
+    const year = dateOnlyValue.value.getFullYear()
+    const hours = timeOnlyValue.value.hours.toString().padStart(2, '0')
+    const minutes = timeOnlyValue.value.minutes.toString().padStart(2, '0')
     
-    // Create Brazilian format: dd/MM/yyyy HH:mm
-    const brazilianFormat = `${day}/${month}/${year} ${hours}:${minutes}`;
-    
-    emit('update:modelValue', brazilianFormat);
+    const brazilianFormat = `${day}/${month}/${year} ${hours}:${minutes}`
+    emit('update:modelValue', brazilianFormat)
+  } else if (!dateOnlyValue.value && !timeOnlyValue.value) {
+    emit('update:modelValue', '')
   }
 }
 

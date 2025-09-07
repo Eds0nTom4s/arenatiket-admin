@@ -320,7 +320,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, reactive, nextTick } from 'vue'
 import { useReportsStore } from '@/stores/reports'
 import { useEventsStore } from '@/stores/events'
 import type { SalesReport, RelatorioEvento, Event, DashboardStats } from '@/types'
@@ -328,6 +328,7 @@ import BaseButton from '@/components/base/BaseButton.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
 import BaseModal from '@/components/base/BaseModal.vue'
 import { Chart, ChartConfiguration, registerables } from 'chart.js'
+import { safelyDestroyChart, isElementInDOM } from '@/utils/domUtils'
 
 // Register Chart.js components
 Chart.register(...registerables)
@@ -405,9 +406,13 @@ const createCharts = () => {
 const createSalesByDayChart = () => {
   if (!salesByDayChart.value || !salesReport.value) return
   
+  // Verificar se o elemento ainda está no DOM
+  if (!salesByDayChart.value.parentNode) return
+  
   // Destruir gráfico existente
   if (salesByDayChartInstance) {
     salesByDayChartInstance.destroy()
+    salesByDayChartInstance = null
   }
   
   const ctx = salesByDayChart.value.getContext('2d')
@@ -474,9 +479,13 @@ const createSalesByDayChart = () => {
 const createSalesByEventChart = () => {
   if (!salesByEventChart.value || !salesReport.value) return
   
+  // Verificar se o elemento ainda está no DOM
+  if (!salesByEventChart.value.parentNode) return
+  
   // Destruir gráfico existente
   if (salesByEventChartInstance) {
     salesByEventChartInstance.destroy()
+    salesByEventChartInstance = null
   }
   
   const ctx = salesByEventChart.value.getContext('2d')
@@ -588,6 +597,19 @@ onMounted(async () => {
     loadEventos(),
     loadDashboardStats()
   ])
+})
+
+// Cleanup ao desmontar o componente
+onUnmounted(() => {
+  if (salesByDayChartInstance) {
+    salesByDayChartInstance.destroy()
+    salesByDayChartInstance = null
+  }
+  
+  if (salesByEventChartInstance) {
+    salesByEventChartInstance.destroy()
+    salesByEventChartInstance = null
+  }
 })
 </script>
 

@@ -23,12 +23,13 @@ export const useCategoriesStore = defineStore('categories', () => {
         totalElements.value = response.length
         totalPages.value = 1
       } else {
-        categories.value = response.content
-        totalElements.value = response.pageable.totalElements
-        totalPages.value = response.pageable.totalPages
+        categories.value = response.content || []
+        totalElements.value = response.pageable?.totalElements || 0
+        totalPages.value = response.pageable?.totalPages || 1
       }
     } catch (error) {
       console.error('Erro ao buscar categorias:', error)
+      categories.value = [] // Garantir que é sempre um array
       toastStore.showError('Erro ao carregar categorias')
     } finally {
       loading.value = false
@@ -52,8 +53,10 @@ export const useCategoriesStore = defineStore('categories', () => {
     try {
       loading.value = true
       const newCategory = await ApiService.createCategory(data)
-      categories.value.unshift(newCategory)
-      totalElements.value++
+      if (newCategory && Array.isArray(categories.value)) {
+        categories.value.unshift(newCategory)
+        totalElements.value++
+      }
       toastStore.showSuccess('Categoria criada com sucesso!')
       return newCategory
     } catch (error) {
@@ -69,7 +72,7 @@ export const useCategoriesStore = defineStore('categories', () => {
       loading.value = true
       const updatedCategory = await ApiService.updateCategory(id, data)
       const index = categories.value.findIndex(c => c.id === id)
-      if (index !== -1) {
+      if (index !== -1 && updatedCategory) {
         categories.value[index] = updatedCategory
       }
       toastStore.showSuccess('Categoria atualizada com sucesso!')

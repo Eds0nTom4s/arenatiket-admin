@@ -6,9 +6,8 @@
           <h1 class="text-3xl font-bold text-gray-900">Gestão de Categorias</h1>
           <p class="text-gray-600 mt-1">Gerencie as categorias de bilhetes do sistema</p>
         </div>
-        <BaseButton @click="showCreateModal = true" variant="primary">
+        <BaseButton @click="showCreateModal = true" variant="primary" text="Nova Categoria">
           <i class="fas fa-plus mr-2"></i>
-          Nova Categoria
         </BaseButton>
       </div>
     </div>
@@ -22,13 +21,11 @@
           icon="fas fa-search"
         />
         <div class="flex items-end">
-          <BaseButton @click="loadCategories" variant="secondary" class="mr-2">
+          <BaseButton @click="loadCategories" variant="secondary" text="Buscar" class="mr-2">
             <i class="fas fa-search mr-2"></i>
-            Buscar
           </BaseButton>
-          <BaseButton @click="clearFilters" variant="outline">
+          <BaseButton @click="clearFilters" variant="outline" text="Limpar">
             <i class="fas fa-times mr-2"></i>
-            Limpar
           </BaseButton>
         </div>
       </div>
@@ -43,6 +40,7 @@
       >
         <template #cell(ativo)="{ row }">
           <span 
+            v-if="row"
             :class="{
               'bg-green-100 text-green-800': row.ativo,
               'bg-red-100 text-red-800': !row.ativo
@@ -54,15 +52,16 @@
         </template>
         
         <template #cell(dataCriacao)="{ row }">
-          {{ formatDate(row.dataCriacao) }}
+          {{ row ? formatDate(row.dataCriacao) : '-' }}
         </template>
         
         <template #cell(acoes)="{ row }">
-          <div class="flex items-center space-x-2">
+          <div v-if="row" class="flex items-center space-x-2">
             <BaseButton
               @click="editCategory(row)"
               variant="ghost"
               size="sm"
+              text=""
               title="Editar"
             >
               <i class="fas fa-edit"></i>
@@ -71,6 +70,7 @@
               @click="deleteCategory(row)"
               variant="ghost"
               size="sm"
+              text=""
               class="text-red-600 hover:text-red-700"
               title="Excluir"
             >
@@ -83,7 +83,7 @@
 
     <!-- Modal Criar/Editar -->
     <BaseModal
-      :show="showCreateModal || showEditModal"
+      :model-value="showCreateModal || showEditModal"
       :title="editingCategory ? 'Editar Categoria' : 'Nova Categoria'"
       size="md"
       @close="closeModal"
@@ -124,19 +124,15 @@
         </div>
         
         <div class="flex justify-end space-x-3 pt-4">
-          <BaseButton type="button" @click="closeModal" variant="outline">
-            Cancelar
-          </BaseButton>
-          <BaseButton type="submit" variant="primary" :loading="categoriesStore.loading">
-            {{ editingCategory ? 'Atualizar' : 'Criar' }}
-          </BaseButton>
+          <BaseButton type="button" @click="closeModal" variant="outline" text="Cancelar" />
+          <BaseButton type="submit" variant="primary" :text="editingCategory ? 'Atualizar' : 'Criar'" :loading="categoriesStore.loading" />
         </div>
       </form>
     </BaseModal>
 
     <!-- Modal Confirmação Exclusão -->
     <BaseModal
-      :show="showDeleteModal"
+      :model-value="showDeleteModal"
       title="Confirmar Exclusão"
       size="sm"
       @close="showDeleteModal = false"
@@ -152,12 +148,8 @@
           Tem certeza que deseja excluir a categoria "{{ categoryToDelete?.nome }}"?
         </p>
         <div class="flex justify-center space-x-3">
-          <BaseButton @click="showDeleteModal = false" variant="outline">
-            Cancelar
-          </BaseButton>
-          <BaseButton @click="confirmDelete" variant="danger" :loading="categoriesStore.loading">
-            Excluir
-          </BaseButton>
+          <BaseButton @click="showDeleteModal = false" variant="outline" text="Cancelar" />
+          <BaseButton @click="confirmDelete" variant="danger" text="Excluir" :loading="categoriesStore.loading" />
         </div>
       </div>
     </BaseModal>

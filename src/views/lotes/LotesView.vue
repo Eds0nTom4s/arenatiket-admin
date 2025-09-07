@@ -6,9 +6,8 @@
           <h1 class="text-3xl font-bold text-gray-900">Gestão de Lotes</h1>
           <p class="text-gray-600 mt-1">Gerencie os lotes de bilhetes por evento</p>
         </div>
-        <BaseButton @click="showCreateModal = true" variant="primary">
+        <BaseButton @click="showCreateModal = true" variant="primary" text="Novo Lote">
           <i class="fas fa-plus mr-2"></i>
-          Novo Lote
         </BaseButton>
       </div>
     </div>
@@ -46,13 +45,11 @@
           </select>
         </div>
         <div class="flex items-end">
-          <BaseButton @click="loadLotes" variant="secondary" class="mr-2">
+          <BaseButton @click="loadLotes" variant="secondary" text="Buscar" class="mr-2">
             <i class="fas fa-search mr-2"></i>
-            Buscar
           </BaseButton>
-          <BaseButton @click="clearFilters" variant="outline">
+          <BaseButton @click="clearFilters" variant="outline" text="Limpar">
             <i class="fas fa-times mr-2"></i>
-            Limpar
           </BaseButton>
         </div>
       </div>
@@ -67,36 +64,37 @@
         empty-message="Nenhum lote encontrado"
       >
         <template #cell(evento)="{ row }">
-          {{ row.evento.nome }}
+          {{ row?.evento?.nome || '-' }}
         </template>
         
         <template #cell(categoria)="{ row }">
-          {{ row.categoria.nome }}
+          {{ row?.categoria?.nome || '-' }}
         </template>
         
         <template #cell(preco)="{ row }">
-          {{ formatCurrency(row.preco) }}
+          {{ row ? formatCurrency(row.preco) : '-' }}
         </template>
         
         <template #cell(estoque)="{ row }">
-          <div class="text-sm">
+          <div v-if="row" class="text-sm">
             <div class="flex justify-between">
               <span>Disponível:</span>
-              <span class="font-medium text-green-600">{{ row.quantidadeDisponivel }}</span>
+              <span class="font-medium text-green-600">{{ row.quantidadeDisponivel || 0 }}</span>
             </div>
             <div class="flex justify-between">
               <span>Vendido:</span>
-              <span class="font-medium text-blue-600">{{ row.quantidadeVendida }}</span>
+              <span class="font-medium text-blue-600">{{ row.quantidadeVendida || 0 }}</span>
             </div>
             <div class="flex justify-between border-t pt-1">
               <span>Total:</span>
-              <span class="font-medium">{{ row.quantidadeTotal }}</span>
+              <span class="font-medium">{{ row.quantidadeTotal || 0 }}</span>
             </div>
           </div>
         </template>
         
         <template #cell(ativo)="{ row }">
           <span 
+            v-if="row"
             :class="{
               'bg-green-100 text-green-800': row.ativo,
               'bg-red-100 text-red-800': !row.ativo
@@ -108,18 +106,19 @@
         </template>
         
         <template #cell(vendas)="{ row }">
-          <div class="text-sm">
+          <div v-if="row" class="text-sm">
             <div>{{ formatDate(row.dataInicioVenda) }}</div>
             <div class="text-gray-500">até {{ formatDate(row.dataFimVenda) }}</div>
           </div>
         </template>
         
         <template #cell(acoes)="{ row }">
-          <div class="flex items-center space-x-2">
+          <div v-if="row" class="flex items-center space-x-2">
             <BaseButton
               @click="editLote(row)"
               variant="ghost"
               size="sm"
+              text=""
               title="Editar"
             >
               <i class="fas fa-edit"></i>
@@ -128,6 +127,7 @@
               @click="deleteLote(row)"
               variant="ghost"
               size="sm"
+              text=""
               class="text-red-600 hover:text-red-700"
               title="Excluir"
             >
@@ -140,7 +140,7 @@
 
     <!-- Modal Criar/Editar -->
     <BaseModal
-      :show="showCreateModal || showEditModal"
+      :model-value="showCreateModal || showEditModal"
       :title="editingLote ? 'Editar Lote' : 'Novo Lote'"
       size="lg"
       @close="closeModal"
@@ -248,19 +248,15 @@
         </div>
         
         <div class="flex justify-end space-x-3 pt-4">
-          <BaseButton type="button" @click="closeModal" variant="outline">
-            Cancelar
-          </BaseButton>
-          <BaseButton type="submit" variant="primary" :loading="lotesStore.loading">
-            {{ editingLote ? 'Atualizar' : 'Criar' }}
-          </BaseButton>
+          <BaseButton type="button" @click="closeModal" variant="outline" text="Cancelar" />
+          <BaseButton type="submit" variant="primary" :text="editingLote ? 'Atualizar' : 'Criar'" :loading="lotesStore.loading" />
         </div>
       </form>
     </BaseModal>
 
     <!-- Modal Confirmação Exclusão -->
     <BaseModal
-      :show="showDeleteModal"
+      :model-value="showDeleteModal"
       title="Confirmar Exclusão"
       size="sm"
       @close="showDeleteModal = false"
@@ -277,12 +273,8 @@
           Esta ação pode afetar vendas em andamento.
         </p>
         <div class="flex justify-center space-x-3">
-          <BaseButton @click="showDeleteModal = false" variant="outline">
-            Cancelar
-          </BaseButton>
-          <BaseButton @click="confirmDelete" variant="danger" :loading="lotesStore.loading">
-            Excluir
-          </BaseButton>
+          <BaseButton @click="showDeleteModal = false" variant="outline" text="Cancelar" />
+          <BaseButton @click="confirmDelete" variant="danger" text="Excluir" :loading="lotesStore.loading" />
         </div>
       </div>
     </BaseModal>
@@ -345,23 +337,23 @@ const columns = [
 ]
 
 const filteredLotes = computed(() => {
-  let result = lotesStore.lotes
+  let result = lotesStore.lotes || []
   
   if (filters.search) {
     const search = filters.search.toLowerCase()
     result = result.filter(lote => 
-      lote.nome.toLowerCase().includes(search) ||
-      lote.evento.nome.toLowerCase().includes(search) ||
-      lote.categoria.nome.toLowerCase().includes(search)
+      lote?.nome?.toLowerCase().includes(search) ||
+      lote?.evento?.nome?.toLowerCase().includes(search) ||
+      lote?.categoria?.nome?.toLowerCase().includes(search)
     )
   }
   
   if (filters.eventoId) {
-    result = result.filter(lote => lote.evento.id === parseInt(filters.eventoId))
+    result = result.filter(lote => lote?.evento?.id === parseInt(filters.eventoId))
   }
   
   if (filters.ativo !== '') {
-    result = result.filter(lote => lote.ativo === (filters.ativo === 'true'))
+    result = result.filter(lote => lote?.ativo === (filters.ativo === 'true'))
   }
   
   return result
@@ -376,11 +368,14 @@ const loadEventos = async () => {
     const response = await eventsStore.fetchEvents()
     if (Array.isArray(response)) {
       eventos.value = response
-    } else {
+    } else if (response?.content) {
       eventos.value = response.content
+    } else {
+      eventos.value = []
     }
   } catch (error) {
     console.error('Erro ao carregar eventos:', error)
+    eventos.value = []
   }
 }
 
@@ -511,12 +506,22 @@ const formatCurrency = (value: number) => {
 }
 
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('pt-BR')
+  if (!dateString) return '-'
+  try {
+    return new Date(dateString).toLocaleDateString('pt-BR')
+  } catch {
+    return '-'
+  }
 }
 
 const formatDateTimeLocal = (dateString: string) => {
-  const date = new Date(dateString)
-  return date.toISOString().slice(0, 16)
+  if (!dateString) return ''
+  try {
+    const date = new Date(dateString)
+    return date.toISOString().slice(0, 16)
+  } catch {
+    return ''
+  }
 }
 
 onMounted(async () => {

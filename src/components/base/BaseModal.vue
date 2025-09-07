@@ -1,14 +1,14 @@
 <template>
   <Teleport to="body">
     <div
-      v-show="modelValue"
+      v-show="isVisible"
       class="fixed inset-0 z-50 overflow-y-auto"
       @click="handleBackdropClick"
     >
       <!-- Backdrop -->
       <div
         class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
-        :class="modelValue ? 'opacity-100' : 'opacity-0'"
+        :class="isVisible ? 'opacity-100' : 'opacity-0'"
       />
       
       <!-- Modal -->
@@ -74,10 +74,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onUnmounted } from 'vue'
 
 interface Props {
-  modelValue: boolean
+  modelValue?: boolean
+  show?: boolean  // Compatibilidade
   title?: string
   size?: 'sm' | 'md' | 'lg' | 'xl'
   closable?: boolean
@@ -92,6 +93,8 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  modelValue: false,
+  show: false,
   title: '',
   size: 'md',
   closable: true,
@@ -112,6 +115,9 @@ const emit = defineEmits<{
 }>()
 
 const modalRef = ref<HTMLElement>()
+
+// Computed para suportar ambas as propriedades
+const isVisible = computed(() => props.modelValue || props.show)
 
 const sizeClasses = computed(() => {
   const sizes = {
@@ -146,19 +152,25 @@ const handleEscape = (event: KeyboardEvent) => {
 }
 
 // Focus management
-watch(() => props.modelValue, async (isOpen) => {
+watch(() => isVisible.value, async (isOpen) => {
   if (isOpen) {
     document.addEventListener('keydown', handleEscape)
     document.body.style.overflow = 'hidden'
     
     await nextTick()
-    if (modalRef.value) {
+    if (modalRef.value && modalRef.value.parentNode) {
       modalRef.value.focus()
     }
   } else {
     document.removeEventListener('keydown', handleEscape)
     document.body.style.overflow = ''
   }
+})
+
+// Cleanup ao desmontar
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleEscape)
+  document.body.style.overflow = ''
 })
 </script>
 

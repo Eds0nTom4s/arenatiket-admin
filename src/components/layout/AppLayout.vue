@@ -147,7 +147,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
@@ -275,4 +275,9 @@ const handleLogout = () => {
   authStore.logout()
   sidebarOpen.value = false
 }
+
+// Limpar estado ao desmontar
+onUnmounted(() => {
+  sidebarOpen.value = false
+})
 </script>

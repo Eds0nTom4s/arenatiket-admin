@@ -93,7 +93,7 @@
         <!-- Table Body -->
         <tbody class="bg-white divide-y divide-gray-200">
           <tr
-            v-for="(item, index) in data"
+            v-for="(item, index) in (data || [])"
             :key="getRowKey(item, index)"
             class="hover:bg-gray-50 transition-colors"
             :class="getRowClass(item, index)"
@@ -107,6 +107,7 @@
               <slot
                 :name="`cell(${column.key})`"
                 :item="item"
+                :row="item"
                 :value="getColumnValue(item, column.key)"
                 :index="index"
               >
@@ -124,6 +125,7 @@
               <slot
                 name="actions"
                 :item="item"
+                :row="item"
                 :index="index"
               >
                 <div class="flex items-center justify-end space-x-2">
@@ -275,10 +277,12 @@ const emit = defineEmits<{
 
 // Computed
 const getColumnValue = (item: any, key: string) => {
-  return key.split('.').reduce((obj, prop) => obj?.[prop], item)
+  if (!item) return ''
+  return key.split('.').reduce((obj, prop) => obj?.[prop], item) || ''
 }
 
 const getRowKey = (item: any, index: number) => {
+  if (!item) return index
   return getColumnValue(item, props.rowKey) || index
 }
 

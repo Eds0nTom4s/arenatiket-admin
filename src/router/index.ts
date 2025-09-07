@@ -200,6 +200,10 @@ router.beforeEach(async (to, from, next) => {
 // Navigation error handling
 router.onError((error) => {
   console.error('Router error:', error)
+  // Silenciar erros de parentNode que são comuns durante navegação
+  if (error.message && error.message.includes('parentNode')) {
+    return
+  }
 })
 
 export default router

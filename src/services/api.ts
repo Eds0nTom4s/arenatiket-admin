@@ -11,7 +11,19 @@ import type {
   Ticket,
   TicketValidation,
   SalesReport,
-  TicketCount
+  TicketCount,
+  Category,
+  CreateCategoryRequest,
+  Lote,
+  CreateLoteRequest,
+  Reserva,
+  CreateReservaRequest,
+  Pedido,
+  CheckoutRequest,
+  CheckoutResponse,
+  RelatorioVendas,
+  RelatorioEvento,
+  DashboardStats
 } from '@/types'
 import router from '@/router'
 
@@ -201,6 +213,133 @@ export class ApiService {
     eventoId?: number
   }): Promise<SalesReport> {
     const response = await apiClient.get<ApiResponse<SalesReport>>('/admin/relatorios/vendas', { params })
+    return response.data.dados
+  }
+
+  static async getEventReport(id: number): Promise<RelatorioEvento> {
+    const response = await apiClient.get<ApiResponse<RelatorioEvento>>(`/admin/relatorios/evento/${id}`)
+    return response.data.dados
+  }
+
+  // Categorias (ADMIN)
+  static async getCategories(params?: {
+    page?: number
+    size?: number
+  }): Promise<PageableResponse<Category> | Category[]> {
+    const response = await apiClient.get<ApiResponse<PageableResponse<Category>> | ApiResponse<Category[]>>('/admin/categorias', { params })
+    return response.data.dados
+  }
+
+  static async getCategoriesPublic(): Promise<Category[]> {
+    const response = await apiClient.get<ApiResponse<Category[]>>('/categorias')
+    return response.data.dados
+  }
+
+  static async createCategory(data: CreateCategoryRequest): Promise<Category> {
+    const response = await apiClient.post<ApiResponse<Category>>('/admin/categorias', data)
+    return response.data.dados
+  }
+
+  static async updateCategory(id: number, data: Partial<CreateCategoryRequest>): Promise<Category> {
+    const response = await apiClient.put<ApiResponse<Category>>(`/admin/categorias/${id}`, data)
+    return response.data.dados
+  }
+
+  static async deleteCategory(id: number): Promise<void> {
+    await apiClient.delete(`/admin/categorias/${id}`)
+  }
+
+  // Lotes (ADMIN)
+  static async getLotes(params?: {
+    page?: number
+    size?: number
+  }): Promise<PageableResponse<Lote> | Lote[]> {
+    const response = await apiClient.get<ApiResponse<PageableResponse<Lote>> | ApiResponse<Lote[]>>('/admin/lotes', { params })
+    return response.data.dados
+  }
+
+  static async getLotesByEvent(eventoId: number): Promise<Lote[]> {
+    const response = await apiClient.get<ApiResponse<Lote[]>>(`/lotes/evento/${eventoId}`)
+    return response.data.dados
+  }
+
+  static async createLote(data: CreateLoteRequest): Promise<Lote> {
+    const response = await apiClient.post<ApiResponse<Lote>>('/admin/lotes', data)
+    return response.data.dados
+  }
+
+  static async updateLote(id: number, data: Partial<CreateLoteRequest>): Promise<Lote> {
+    const response = await apiClient.put<ApiResponse<Lote>>(`/admin/lotes/${id}`, data)
+    return response.data.dados
+  }
+
+  static async deleteLote(id: number): Promise<void> {
+    await apiClient.delete(`/admin/lotes/${id}`)
+  }
+
+  // Reservas (ADMIN)
+  static async getReservas(params?: {
+    page?: number
+    size?: number
+    eventoId?: number
+    status?: string
+  }): Promise<PageableResponse<Reserva> | Reserva[]> {
+    const response = await apiClient.get<ApiResponse<PageableResponse<Reserva>> | ApiResponse<Reserva[]>>('/admin/reservas', { params })
+    return response.data.dados
+  }
+
+  static async createReserva(data: CreateReservaRequest): Promise<Reserva> {
+    const response = await apiClient.post<ApiResponse<Reserva>>('/admin/reservas', data)
+    return response.data.dados
+  }
+
+  static async cancelReserva(id: number): Promise<Reserva> {
+    const response = await apiClient.put<ApiResponse<Reserva>>(`/admin/reservas/${id}/cancelar`)
+    return response.data.dados
+  }
+
+  static async convertReserva(id: number): Promise<Pedido> {
+    const response = await apiClient.post<ApiResponse<Pedido>>(`/admin/reservas/${id}/converter`)
+    return response.data.dados
+  }
+
+  // Vendas/Checkout
+  static async processCheckout(data: CheckoutRequest): Promise<CheckoutResponse> {
+    const response = await apiClient.post<ApiResponse<CheckoutResponse>>('/vendas/checkout', data)
+    return response.data.dados
+  }
+
+  static async getMyOrders(params?: {
+    page?: number
+    size?: number
+  }): Promise<PageableResponse<Pedido> | Pedido[]> {
+    const response = await apiClient.get<ApiResponse<PageableResponse<Pedido>> | ApiResponse<Pedido[]>>('/vendas/meus-pedidos', { params })
+    return response.data.dados
+  }
+
+  static async cancelOrder(pedidoId: number): Promise<void> {
+    await apiClient.post(`/vendas/cancelar/${pedidoId}`)
+  }
+
+  // Pedidos
+  static async getOrder(id: number): Promise<Pedido> {
+    const response = await apiClient.get<ApiResponse<Pedido>>(`/pedidos/${id}`)
+    return response.data.dados
+  }
+
+  static async getAllOrders(params?: {
+    page?: number
+    size?: number
+    status?: string
+    eventoId?: number
+  }): Promise<PageableResponse<Pedido> | Pedido[]> {
+    const response = await apiClient.get<ApiResponse<PageableResponse<Pedido>> | ApiResponse<Pedido[]>>('/admin/pedidos', { params })
+    return response.data.dados
+  }
+
+  // Dashboard/Estatísticas
+  static async getDashboardStats(): Promise<DashboardStats> {
+    const response = await apiClient.get<ApiResponse<DashboardStats>>('/admin/dashboard/stats')
     return response.data.dados
   }
 }

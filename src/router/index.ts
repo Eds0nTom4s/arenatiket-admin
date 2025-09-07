@@ -71,6 +71,51 @@ const routes: RouteRecordRaw[] = [
         }
       },
       {
+        path: '/categorias',
+        name: 'Categories',
+        component: () => import('@/views/categories/CategoriesView.vue'),
+        meta: { 
+          title: 'Categorias - ArenaTicket Admin',
+          permissions: ['ADMIN']
+        }
+      },
+      {
+        path: '/lotes',
+        name: 'Lotes',
+        component: () => import('@/views/lotes/LotesView.vue'),
+        meta: { 
+          title: 'Lotes - ArenaTicket Admin',
+          permissions: ['ADMIN']
+        }
+      },
+      {
+        path: '/reservas',
+        name: 'Reservas',
+        component: () => import('@/views/reservas/ReservasView.vue'),
+        meta: { 
+          title: 'Reservas - ArenaTicket Admin',
+          permissions: ['ADMIN']
+        }
+      },
+      {
+        path: '/pedidos',
+        name: 'Orders',
+        component: () => import('@/views/pedidos/PedidosView.vue'),
+        meta: { 
+          title: 'Pedidos - ArenaTicket Admin',
+          permissions: ['ADMIN', 'VENDEDOR']
+        }
+      },
+      {
+        path: '/vendas',
+        name: 'Sales',
+        component: () => import('@/views/vendas/VendasView.vue'),
+        meta: { 
+          title: 'Vendas - ArenaTicket Admin',
+          permissions: ['ADMIN', 'VENDEDOR']
+        }
+      },
+      {
         path: '/relatorios',
         name: 'Reports',
         component: () => import('@/views/reports/ReportsView.vue'),

@@ -146,3 +146,232 @@ export interface TicketCount {
   status: string
   count: number
 }
+
+// === CATEGORIAS ===
+export interface Category {
+  id: number
+  nome: string
+  descricao?: string
+  ativo: boolean
+  dataCriacao?: string
+}
+
+export interface CreateCategoryRequest {
+  nome: string
+  descricao?: string
+  ativo?: boolean
+}
+
+// === LOTES ===
+export interface Lote {
+  id: number
+  evento: {
+    id: number
+    nome: string
+  }
+  categoria: {
+    id: number
+    nome: string
+  }
+  nome: string
+  descricao?: string
+  preco: number
+  quantidadeTotal: number
+  quantidadeDisponivel: number
+  quantidadeVendida: number
+  dataInicioVenda: string
+  dataFimVenda: string
+  ativo: boolean
+  dataCriacao?: string
+}
+
+export interface CreateLoteRequest {
+  eventoId: number
+  categoriaId: number
+  nome: string
+  descricao?: string
+  preco: number
+  quantidadeTotal: number
+  dataInicioVenda: string
+  dataFimVenda: string
+  ativo?: boolean
+}
+
+// === RESERVAS ===
+export interface Reserva {
+  id: number
+  evento: {
+    id: number
+    nome: string
+    dataEvento: string
+  }
+  lote: {
+    id: number
+    nome: string
+    preco: number
+  }
+  quantidade: number
+  valorTotal: number
+  status: 'ATIVA' | 'CANCELADA' | 'CONVERTIDA' | 'EXPIRADA'
+  dataReserva: string
+  dataExpiracao: string
+  nomeCliente: string
+  emailCliente: string
+  telefoneCliente?: string
+  observacoes?: string
+  dataCancelamento?: string
+  dataConversao?: string
+}
+
+export interface CreateReservaRequest {
+  eventoId: number
+  loteId: number
+  quantidade: number
+  nomeCliente: string
+  emailCliente: string
+  telefoneCliente?: string
+  observacoes?: string
+}
+
+// === PEDIDOS ===
+export interface Pedido {
+  id: number
+  evento: {
+    id: number
+    nome: string
+    dataEvento: string
+  }
+  usuario: {
+    id: number
+    nome: string
+    email: string
+  }
+  itens: PedidoItem[]
+  valorTotal: number
+  status: 'PENDENTE' | 'CONFIRMADO' | 'CANCELADO' | 'REEMBOLSADO'
+  dataPedido: string
+  dataConfirmacao?: string
+  dataCancelamento?: string
+  metodoPagamento?: string
+  observacoes?: string
+  bilhetes?: Ticket[]
+}
+
+export interface PedidoItem {
+  id: number
+  lote: {
+    id: number
+    nome: string
+    preco: number
+  }
+  quantidade: number
+  precoUnitario: number
+  precoTotal: number
+}
+
+// === VENDAS/CHECKOUT ===
+export interface CheckoutRequest {
+  eventoId: number
+  itens: CheckoutItem[]
+  nomeComprador: string
+  emailComprador: string
+  telefoneComprador?: string
+  metodoPagamento: string
+  observacoes?: string
+}
+
+export interface CheckoutItem {
+  loteId: number
+  quantidade: number
+}
+
+export interface CheckoutResponse {
+  pedidoId: number
+  valorTotal: number
+  status: string
+  bilhetes: Ticket[]
+  dataVencimento?: string
+  linkPagamento?: string
+}
+
+// === RELATÓRIOS ===
+export interface RelatorioVendas {
+  periodo: {
+    dataInicio: string
+    dataFim: string
+  }
+  resumo: {
+    totalBilhetesVendidos: number
+    valorTotalVendas: number
+    ticketMedio: number
+    eventosComVendas: number
+  }
+  vendasPorEvento: VendaEvento[]
+  vendasPorDia: VendaDia[]
+  vendasPorCategoria?: VendaCategoria[]
+}
+
+export interface VendaEvento {
+  eventoId: number
+  nomeEvento: string
+  bilhetesVendidos: number
+  valorVendas: number
+  percentualOcupacao: number
+}
+
+export interface VendaDia {
+  data: string
+  bilhetesVendidos: number
+  valorVendas: number
+}
+
+export interface VendaCategoria {
+  categoriaId: number
+  nomeCategoria: string
+  bilhetesVendidos: number
+  valorVendas: number
+}
+
+export interface RelatorioEvento {
+  evento: {
+    id: number
+    nome: string
+    dataEvento: string
+    local: string
+    capacidadeTotal: number
+  }
+  resumo: {
+    bilhetesVendidos: number
+    bilhetesDisponiveis: number
+    valorTotalVendas: number
+    percentualOcupacao: number
+  }
+  vendasPorLote: {
+    loteId: number
+    nomeLote: string
+    quantidadeTotal: number
+    quantidadeVendida: number
+    valorVendas: number
+    percentualVendido: number
+  }[]
+  vendasPorPeriodo: VendaDia[]
+}
+
+// === DASHBOARD ===
+export interface DashboardStats {
+  totalEventos: number
+  eventosAtivos: number
+  totalBilhetesVendidos: number
+  valorTotalVendas: number
+  usuariosAtivos: number
+  reservasAtivas: number
+  pedidosPendentes: number
+  bilhetesValidados: number
+}
+
+// === ENUMS ===
+export type StatusEvento = 'ATIVO' | 'INATIVO' | 'ESGOTADO'
+export type StatusBilhete = 'DISPONIVEL' | 'RESERVADO' | 'VENDIDO' | 'USADO' | 'CANCELADO'
+export type StatusReserva = 'ATIVA' | 'CANCELADA' | 'CONVERTIDA' | 'EXPIRADA'
+export type StatusPedido = 'PENDENTE' | 'CONFIRMADO' | 'CANCELADO' | 'REEMBOLSADO'
+export type UserRole = 'ADMIN' | 'VENDEDOR' | 'PORTEIRO'

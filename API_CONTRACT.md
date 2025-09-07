@@ -33,8 +33,6 @@ Content-Type: application/json
 
 ### 🔑 Autenticação
 - [POST /auth/login](#post-authlogin) - Login de usuário
-- [POST /auth/register](#post-authregister) - Registro de usuário
-- [POST /auth/refresh](#post-authrefresh) - Renovar token
 
 ### 👥 Usuários (ADMIN)
 - [GET /admin/usuarios](#get-adminusuarios) - Listar usuários
@@ -47,14 +45,47 @@ Content-Type: application/json
 - [GET /eventos/{id}](#get-eventosid) - Buscar evento
 - [POST /admin/eventos](#post-admineventos) - Criar evento (ADMIN)
 - [PUT /admin/eventos/{id}](#put-admineventosid) - Atualizar evento (ADMIN)
+- [DELETE /admin/eventos/{id}](#delete-admineventosid) - Desativar evento (ADMIN)
+
+### 🏷️ Categorias de Bilhetes (ADMIN)
+- [GET /admin/categorias](#get-admincategorias) - Listar todas as categorias
+- [POST /admin/categorias](#post-admincategorias) - Criar categoria
+- [PUT /admin/categorias/{id}](#put-admincategoriasid) - Atualizar categoria
+- [DELETE /admin/categorias/{id}](#delete-admincategoriasid) - Desativar categoria
+- [GET /categorias](#get-categorias) - Listar categorias ativas
+
+### 📦 Lotes de Bilhetes (ADMIN)
+- [GET /admin/lotes](#get-adminlotes) - Listar todos os lotes
+- [POST /admin/lotes](#post-adminlotes) - Criar lote
+- [PUT /admin/lotes/{id}](#put-adminlotesid) - Atualizar lote
+- [DELETE /admin/lotes/{id}](#delete-adminlotesid) - Desativar lote
+- [GET /lotes/evento/{eventoId}](#get-loteseventoeventoid) - Lotes por evento
+
+### 📝 Reservas Administrativas (ADMIN)
+- [POST /admin/reservas](#post-adminreservas) - Criar reserva
+- [GET /admin/reservas](#get-adminreservas) - Listar reservas
+- [PUT /admin/reservas/{id}/cancelar](#put-adminreservasidcancelar) - Cancelar reserva
+- [POST /admin/reservas/{id}/converter](#post-adminreservasidconverter) - Converter em pedido
+
+### 💰 Sistema de Vendas
+- [POST /vendas/checkout](#post-vendascheckout) - Processar checkout
+- [GET /vendas/meus-pedidos](#get-vendasmeus-pedidos) - Meus pedidos
+- [POST /vendas/cancelar/{pedidoId}](#post-vendascancelarpedidoid) - Cancelar pedido
+
+### 📋 Gestão de Pedidos
+- [GET /pedidos/{id}](#get-pedidosid) - Buscar pedido
+- [GET /meus-pedidos](#get-meus-pedidos) - Listar meus pedidos
+- [GET /admin/pedidos](#get-adminpedidos) - Listar todos os pedidos (ADMIN)
 
 ### 🎫 Bilhetes
 - [GET /bilhetes/{id}](#get-bilhetesid) - Buscar bilhete
 - [GET /bilhetes/qr/{codigoQR}](#get-bilhetesqrcodigoqr) - Buscar por QR
+- [GET /bilhetes/evento/{eventoId}](#get-bilheteseventoeventoid) - Bilhetes por evento
 - [POST /porteiro/bilhetes/validar](#post-porteirobilhetesvalidar) - Validar bilhete (PORTEIRO)
 
 ### 📊 Relatórios (ADMIN)
 - [GET /admin/relatorios/vendas](#get-adminrelatoriosvendas) - Relatório de vendas
+- [GET /admin/relatorios/evento/{id}](#get-adminrelatoriosevento) - Relatório de evento
 - [GET /admin/bilhetes/contagem/{status}](#get-adminbilhetescontagemstatus) - Contagem por status
 
 ---

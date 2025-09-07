@@ -27,81 +27,13 @@
               : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'"
             @click="closeSidebar"
           >
-            <svg
-              v-if="item.name === 'Dashboard'"
-              class="mr-3 h-5 w-5 flex-shrink-0"
-              :class="isActiveRoute(item.to) ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-500'"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-              <polyline points="9,22 9,12 15,12 15,22"/>
-            </svg>
-            <svg
-              v-else-if="item.name === 'Usuários'"
-              class="mr-3 h-5 w-5 flex-shrink-0"
-              :class="isActiveRoute(item.to) ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-500'"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 00-3-3.87"/>
-              <path d="M16 3.13a4 4 0 010 7.75"/>
-            </svg>
-            <svg
-              v-else-if="item.name === 'Eventos'"
-              class="mr-3 h-5 w-5 flex-shrink-0"
-              :class="isActiveRoute(item.to) ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-500'"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-              <line x1="16" y1="2" x2="16" y2="6"/>
-              <line x1="8" y1="2" x2="8" y2="6"/>
-              <line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
-            <svg
-              v-else-if="item.name === 'Bilhetes'"
-              class="mr-3 h-5 w-5 flex-shrink-0"
-              :class="isActiveRoute(item.to) ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-500'"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M2 9a3 3 0 010-6h1.4l2.6 2.6L8.6 3H12v7l-4 4v1h8v-1l-4-4V3h3.4l2.6 2.6L20.6 3H22a3 3 0 010 6"/>
-            </svg>
-            <svg
-              v-else-if="item.name === 'Validação'"
-              class="mr-3 h-5 w-5 flex-shrink-0"
-              :class="isActiveRoute(item.to) ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-500'"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <polyline points="20,6 9,17 4,12"/>
-            </svg>
-            <svg
-              v-else-if="item.name === 'Relatórios'"
-              class="mr-3 h-5 w-5 flex-shrink-0"
-              :class="isActiveRoute(item.to) ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-500'"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <line x1="18" y1="20" x2="18" y2="10"/>
-              <line x1="12" y1="20" x2="12" y2="4"/>
-              <line x1="6" y1="20" x2="6" y2="14"/>
-            </svg>
+            <i
+              class="mr-3 h-5 w-5 flex-shrink-0 fas"
+              :class="[
+                getIconClass(item.icon),
+                isActiveRoute(item.to) ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-500'
+              ]"
+            ></i>
             {{ item.name }}
           </router-link>
         </template>
@@ -231,34 +163,87 @@ const navigationItems = [
   {
     name: 'Dashboard',
     to: '/',
-    permissions: ['ANY']
+    permissions: ['ANY'],
+    icon: 'home'
   },
   {
     name: 'Usuários',
     to: '/usuarios',
-    permissions: ['ADMIN']
+    permissions: ['ADMIN'],
+    icon: 'users'
   },
   {
     name: 'Eventos',
     to: '/eventos',
-    permissions: ['ADMIN', 'VENDEDOR']
+    permissions: ['ADMIN', 'VENDEDOR'],
+    icon: 'calendar'
+  },
+  {
+    name: 'Categorias',
+    to: '/categorias',
+    permissions: ['ADMIN'],
+    icon: 'tags'
+  },
+  {
+    name: 'Lotes',
+    to: '/lotes',
+    permissions: ['ADMIN'],
+    icon: 'package'
+  },
+  {
+    name: 'Reservas',
+    to: '/reservas',
+    permissions: ['ADMIN'],
+    icon: 'bookmark'
+  },
+  {
+    name: 'Vendas',
+    to: '/vendas',
+    permissions: ['ADMIN', 'VENDEDOR'],
+    icon: 'shopping-cart'
+  },
+  {
+    name: 'Pedidos',
+    to: '/pedidos',
+    permissions: ['ADMIN', 'VENDEDOR'],
+    icon: 'receipt'
   },
   {
     name: 'Bilhetes',
     to: '/bilhetes',
-    permissions: ['ADMIN', 'VENDEDOR', 'PORTEIRO']
+    permissions: ['ADMIN', 'VENDEDOR', 'PORTEIRO'],
+    icon: 'ticket'
   },
   {
     name: 'Validação',
     to: '/validacao',
-    permissions: ['ADMIN', 'PORTEIRO']
+    permissions: ['ADMIN', 'PORTEIRO'],
+    icon: 'check-circle'
   },
   {
     name: 'Relatórios',
     to: '/relatorios',
-    permissions: ['ADMIN']
+    permissions: ['ADMIN'],
+    icon: 'chart-bar'
   }
 ]
+
+const getIconClass = (iconName: string) => {
+  const iconMap = {
+    'home': 'fa-home',
+    'users': 'fa-users',
+    'calendar': 'fa-calendar',
+    'tags': 'fa-tags',
+    'package': 'fa-box',
+    'bookmark': 'fa-bookmark',
+    'shopping-cart': 'fa-shopping-cart',
+    'receipt': 'fa-receipt',
+    'ticket': 'fa-ticket-alt',
+    'check-circle': 'fa-check-circle',
+    'chart-bar': 'fa-chart-bar'
+  }
+  return iconMap[iconName] || 'fa-circle'
+}
 
 const currentPageTitle = computed(() => {
   const currentRoute = navigationItems.find(item => 

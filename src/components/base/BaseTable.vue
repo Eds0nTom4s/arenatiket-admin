@@ -61,8 +61,8 @@
             <th
               v-for="column in columns"
               :key="column.key"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              :class="column.headerClass"
+              class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              :class="[column.headerClass, column.cellClass]"
             >
               <div class="flex items-center space-x-1">
                 <span>{{ column.label }}</span>
@@ -101,7 +101,7 @@
             <td
               v-for="column in columns"
               :key="column.key"
-              class="px-6 py-4 whitespace-nowrap"
+              class="px-3 py-3 whitespace-nowrap"
               :class="column.cellClass"
             >
               <slot
@@ -278,7 +278,16 @@ const emit = defineEmits<{
 // Computed
 const getColumnValue = (item: any, key: string) => {
   if (!item) return ''
-  return key.split('.').reduce((obj, prop) => obj?.[prop], item) || ''
+  
+  // Para chaves simples
+  if (!key.includes('.')) {
+    return item[key] || ''
+  }
+  
+  // Para chaves aninhadas (ex: evento.nome)
+  return key.split('.').reduce((obj, prop) => {
+    return (obj && obj[prop] !== undefined) ? obj[prop] : null
+  }, item) || ''
 }
 
 const getRowKey = (item: any, index: number) => {

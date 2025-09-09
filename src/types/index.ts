@@ -168,21 +168,23 @@ export interface Lote {
   evento: {
     id: number
     nome: string
-  }
+  } | null
   categoria: {
     id: number
     nome: string
-  }
-  nome: string
+  } | null
+  nome: string  // Campo obrigatório - sempre deve ter um nome padrão
   descricao?: string
   preco: number
   quantidadeTotal: number
   quantidadeDisponivel: number
   quantidadeVendida: number
-  dataInicioVenda: string
-  dataFimVenda: string
+  quantidadeReservada?: number  // Campo adicional que vem da API
+  dataInicioVenda?: string
+  dataFimVenda?: string
   ativo: boolean
   dataCriacao?: string
+  dataAtualizacao?: string | null  // Campo adicional que vem da API
 }
 
 export interface CreateLoteRequest {

@@ -253,8 +253,14 @@ export class ApiService {
   static async getLotes(params?: {
     page?: number
     size?: number
+    includeRelations?: boolean
   }): Promise<PageableResponse<Lote> | Lote[]> {
-    const response = await apiClient.get<ApiResponse<PageableResponse<Lote>> | ApiResponse<Lote[]>>('/admin/lotes', { params })
+    const response = await apiClient.get<ApiResponse<PageableResponse<Lote>> | ApiResponse<Lote[]>>('/admin/lotes', { 
+      params: {
+        ...params,
+        includeRelations: true // Sempre incluir relações
+      }
+    })
     return response.data.dados
   }
 

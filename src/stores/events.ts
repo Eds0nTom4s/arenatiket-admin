@@ -28,18 +28,17 @@ export const useEventsStore = defineStore('events', () => {
       loading.value = true
       const response = await ApiService.getEvents(params)
       
-      // Handle direct array response (current API behavior)
+      // API now returns array directly according to API Contract
       if (Array.isArray(response)) {
         events.value = response.map(event => ({
           ...event,
           // Ensure required properties exist with defaults
           status: event.status || 'ATIVO',
-          categoria: event.categoria || 'OUTROS', // Fallback apenas para eventos muito antigos
+          categoria: event.categoria || 'OUTROS',
           bilhetesVendidos: event.bilhetesVendidos || 0,
           capacidadeTotal: event.capacidadeTotal || 100,
-          // Handle both dataEvento and dataHora fields
-          dataEvento: event.dataEvento || event.dataHora || '',
-          dataHora: event.dataHora || event.dataEvento || ''
+          // Ensure dataEvento is the primary field
+          dataEvento: event.dataEvento || new Date().toISOString()
         }))
         
         // Set pagination for direct array response
@@ -49,14 +48,16 @@ export const useEventsStore = defineStore('events', () => {
           totalElements: events.value.length,
           totalPages: 1
         }
-      } else if (response && response.content) {
-        // Handle paginated response structure
-        events.value = response.content
-        pagination.value = response.pageable
       } else {
-        // Fallback
+        // Fallback for unexpected response structure
+        console.warn('Unexpected events API response structure:', response)
         events.value = []
-        console.warn('Unexpected API response structure for events:', response)
+        pagination.value = {
+          page: 0,
+          size: 0,
+          totalElements: 0,
+          totalPages: 0
+        }
       }
       
       return response

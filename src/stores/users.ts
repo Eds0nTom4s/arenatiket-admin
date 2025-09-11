@@ -42,7 +42,7 @@ export const useUsersStore = defineStore('users', () => {
         users.value = response.content
         pagination.value = response.pageable
       } else {
-        console.warn('Invalid API response structure:', response)
+        console.warn('Unexpected users API response structure:', response)
         users.value = []
         pagination.value = {
           page: 0,

@@ -343,6 +343,7 @@ const formatNumber = (num: number) => {
 }
 
 const formatEventDate = (dateString: string) => {
+  if (!dateString) return ''
   return new Date(dateString).toLocaleString('pt-PT', {
     day: '2-digit',
     month: '2-digit',

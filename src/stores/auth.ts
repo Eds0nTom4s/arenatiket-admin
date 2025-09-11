@@ -26,18 +26,18 @@ export const useAuthStore = defineStore('auth', () => {
       // Debug: log the response to see its structure
       console.log('Login response:', response)
       
-      // Check if response has the expected structure
-      if (!response || !response.token) {
-        throw new Error('Resposta da API inválida - token não encontrado')
+      // Check if response has the expected structure according to API Contract
+      if (!response || !response.token || !response.usuario) {
+        throw new Error('Resposta da API inválida - estrutura incorreta')
       }
       
-      // A API retorna os dados do usuário diretamente, não em response.usuario
+      // Extract user data from response.usuario
       const usuario = {
-        id: response.id,
-        nome: response.nome,
-        email: response.email,
-        role: response.role,
-        ativo: response.ativo || true
+        id: response.usuario.id,
+        nome: response.usuario.nome,
+        email: response.usuario.email,
+        role: response.usuario.role,
+        ativo: response.usuario.ativo || true
       }
       
       if (!usuario.nome || !usuario.email || !usuario.role) {

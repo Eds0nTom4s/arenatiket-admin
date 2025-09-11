@@ -31,12 +31,14 @@ export interface LoginCredentials {
 
 export interface LoginResponse {
   token: string
-  type: string
-  id: number
-  nome: string
-  email: string
-  role: 'ADMIN' | 'VENDEDOR' | 'PORTEIRO'
-  ativo?: boolean
+  tipo: string
+  usuario: {
+    id: number
+    nome: string
+    email: string
+    role: 'ADMIN' | 'VENDEDOR' | 'PORTEIRO'
+    ativo?: boolean
+  }
 }
 
 export interface CreateUserRequest {
@@ -50,8 +52,7 @@ export interface Event {
   id: number
   nome: string
   descricao: string
-  dataEvento?: string  // Legacy field
-  dataHora: string     // Primary field
+  dataEvento: string   // Primary field - ISO 8601 format
   local: string
   categoria: string
   status: 'ATIVO' | 'INATIVO' | 'ESGOTADO'
@@ -67,7 +68,7 @@ export interface Event {
 export interface CreateEventRequest {
   nome: string
   descricao?: string
-  dataHora: string  // Brazilian format: dd/MM/yyyy HH:mm
+  dataEvento: string  // ISO 8601 format: yyyy-MM-ddTHH:mm:ss
   local: string
   categoria?: string
   capacidadeTotal?: number
@@ -80,7 +81,7 @@ export interface Ticket {
   evento: {
     id: number
     nome: string
-    dataEvento: string
+    dataEvento: string  // Changed from dataEvento to match API
     local: string
   }
   categoriaBilhete: {

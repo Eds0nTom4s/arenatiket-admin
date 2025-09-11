@@ -21,7 +21,7 @@
               >
                 <option value="">Selecione um evento</option>
                 <option v-for="evento in eventos" :key="evento.id" :value="evento.id">
-                  {{ evento.nome }} - {{ formatDate(evento.dataHora) }}
+                  {{ evento.nome }} - {{ formatDate(evento.dataEvento) }}
                 </option>
               </select>
             </div>

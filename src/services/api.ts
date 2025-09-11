@@ -59,6 +59,14 @@ apiClient.interceptors.request.use(
 // Interceptador de resposta - tratamento de erros
 apiClient.interceptors.response.use(
   (response: AxiosResponse<ApiResponse>) => {
+    // Log successful responses for debugging
+    console.log('API Success Response:', {
+      url: response.config?.url,
+      method: response.config?.method,
+      status: response.status,
+      success: response.data.sucesso,
+      message: response.data.mensagem
+    })
     return response
   },
   (error: AxiosError<ApiResponse>) => {
@@ -66,8 +74,9 @@ apiClient.interceptors.response.use(
       status: error.response?.status,
       url: error.config?.url,
       method: error.config?.method,
-      data: error.response?.data,
-      headers: error.config?.headers
+      success: error.response?.data?.sucesso,
+      message: error.response?.data?.mensagem,
+      timestamp: error.response?.data?.timestamp
     })
     
     // Use import dinâmico para evitar dependência circular
@@ -92,17 +101,17 @@ apiClient.interceptors.response.use(
       showError('Sessão expirada. Faça login novamente.')
       router.push('/login')
     } else if (error.response?.status === 403) {
-      showError('Você não tem permissão para esta ação.')
+      showError(error.response.data?.mensagem || 'Você não tem permissão para esta ação.')
     } else if (error.response?.status === 404) {
-      showError('Recurso não encontrado.')
+      showError(error.response.data?.mensagem || 'Recurso não encontrado.')
     } else if (error.response?.status === 409) {
       showError(error.response.data?.mensagem || 'Conflito de dados.')
     } else if (error.response?.status === 422) {
       showError(error.response.data?.mensagem || 'Dados inválidos.')
     } else if (error.response && error.response.status >= 500) {
-      showError('Erro interno do servidor. Tente novamente.')
+      showError(error.response.data?.mensagem || 'Erro interno do servidor. Tente novamente.')
     } else {
-      showError(error.response?.data?.mensagem || 'Erro na requisição.')
+      showError(error.response?.data?.mensagem || error.message || 'Erro na requisição.')
     }
     
     return Promise.reject(error)
@@ -163,8 +172,8 @@ export class ApiService {
     size?: number
     categoria?: string
     status?: string
-  }): Promise<PageableResponse<Event>> {
-    const response = await apiClient.get<ApiResponse<PageableResponse<Event>>>('/eventos', { params })
+  }): Promise<Event[]> {
+    const response = await apiClient.get<ApiResponse<Event[]>>('/eventos', { params })
     return response.data.dados
   }
 

@@ -81,7 +81,7 @@
       <!-- Custom cell for event date -->
       <template #cell(dataEvento)="{ item }">
         <span class="text-sm text-gray-900">
-          {{ formatEventDate(item.dataHora || item.dataEvento) }}
+          {{ formatEventDate(item.dataEvento) }}
         </span>
       </template>
       
@@ -232,6 +232,7 @@ import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { useEventsStore } from '@/stores/events'
 import type { Event, CreateEventRequest } from '@/types'
+import { validateEvent, convertBrazilianToISO, VALID_CATEGORIES } from '@/utils/validation'
 import BaseTable from '@/components/base/BaseTable.vue'
 import BaseModal from '@/components/base/BaseModal.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
@@ -296,15 +297,16 @@ const statusOptions = [
   { value: 'ESGOTADO', label: 'Esgotado' }
 ]
 
-const categoryOptions = [
-  { value: 'FUTEBOL', label: 'Futebol' },
-  { value: 'BASQUETEBOL', label: 'Basquetebol' },
-  { value: 'VOLEIBOL', label: 'Voleibol' },
-  { value: 'MUSICA', label: 'Música' },
-  { value: 'TEATRO', label: 'Teatro' },
-  { value: 'DESPORTO', label: 'Desporto' },
-  { value: 'OUTROS', label: 'Outros' }
-]
+const categoryOptions = VALID_CATEGORIES.map(cat => ({
+  value: cat,
+  label: cat === 'FUTEBOL' ? 'Futebol' :
+         cat === 'BASQUETEBOL' ? 'Basquetebol' :
+         cat === 'VOLEIBOL' ? 'Voleibol' :
+         cat === 'MUSICA' ? 'Música' :
+         cat === 'TEATRO' ? 'Teatro' :
+         cat === 'DESPORTO' ? 'Desporto' :
+         'Outros'
+}))
 
 // Computed
 const modalTitle = computed(() => {
@@ -349,30 +351,24 @@ const changePage = (page: number) => {
 }
 
 const formatEventDate = (dateString: string) => {
-  // Handle both ISO format and Brazilian format
-  let date: Date;
+  if (!dateString) return ''
   
-  if (dateString.includes('T')) {
-    // ISO format
-    date = new Date(dateString);
-  } else if (dateString.includes('/')) {
-    // Brazilian format: dd/MM/yyyy HH:mm
-    const [datePart, timePart] = dateString.split(' ');
-    const [day, month, year] = datePart.split('/');
-    const [hours, minutes] = timePart.split(':');
-    date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hours), parseInt(minutes));
-  } else {
-    date = new Date(dateString);
+  // Always expect ISO format from API
+  const date = new Date(dateString)
+  
+  if (isNaN(date.getTime())) {
+    console.warn('Invalid date format:', dateString)
+    return dateString // Return original if invalid
   }
   
   // Always return Brazilian format: dd/MM/yyyy HH:mm
-  const day = date.getDate().toString().padStart(2, '0');
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const year = date.getFullYear();
-  const hours = date.getHours().toString().padStart(2, '0');
-  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0')
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  const year = date.getFullYear()
+  const hours = date.getHours().toString().padStart(2, '0')
+  const minutes = date.getMinutes().toString().padStart(2, '0')
   
-  return `${day}/${month}/${year} ${hours}:${minutes}`;
+  return `${day}/${month}/${year} ${hours}:${minutes}`
 }
 
 const getStatusClass = (status: string) => {
@@ -407,23 +403,21 @@ const openEditModal = (event: Event) => {
   form.nome = event.nome
   form.descricao = event.descricao
   
-  // Convert from ISO or existing format to Brazilian format
-  if (event.dataEvento || event.dataHora) {
-    const dateValue = event.dataHora || event.dataEvento || ''
-    
-    if (dateValue && dateValue.includes('T')) {
-      // Convert from ISO format
-      const date = new Date(dateValue)
+  // Convert from ISO format to Brazilian format for editing
+  if (event.dataEvento) {
+    const date = new Date(event.dataEvento)
+    if (!isNaN(date.getTime())) {
       const day = date.getDate().toString().padStart(2, '0')
       const month = (date.getMonth() + 1).toString().padStart(2, '0')
       const year = date.getFullYear()
       const hours = date.getHours().toString().padStart(2, '0')
       const minutes = date.getMinutes().toString().padStart(2, '0')
       form.dataHora = `${day}/${month}/${year} ${hours}:${minutes}`
-    } else if (dateValue) {
-      // Already in Brazilian format
-      form.dataHora = dateValue
+    } else {
+      form.dataHora = ''
     }
+  } else {
+    form.dataHora = ''
   }
   
   form.local = event.local
@@ -461,88 +455,15 @@ const clearAllErrors = () => {
 
 const validateForm = () => {
   clearAllErrors()
-  let isValid = true
-
-  // Nome (max 200 caracteres)
-  if (!form.nome.trim()) {
-    errors.nome = 'Nome é obrigatório'
-    isValid = false
-  } else if (form.nome.length > 200) {
-    errors.nome = 'Nome deve ter no máximo 200 caracteres'
-    isValid = false
+  
+  // Use centralized validation
+  const validation = validateEvent(form)
+  
+  if (!validation.isValid) {
+    Object.assign(errors, validation.errors)
   }
-
-  // Descrição (max 1000 caracteres, opcional)
-  if (form.descricao && form.descricao.length > 1000) {
-    errors.descricao = 'Descrição deve ter no máximo 1000 caracteres'
-    isValid = false
-  }
-
-  // Data e Hora (obrigatória)
-  if (!form.dataHora) {
-    errors.dataHora = 'Data e hora são obrigatórias'
-    isValid = false
-  } else {
-    // Validate Brazilian date format (dd/MM/yyyy HH:mm)
-    const brazilianDateRegex = /^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})$/
-    
-    if (!brazilianDateRegex.test(form.dataHora)) {
-      errors.dataHora = 'Formato inválido. Use: DD/MM/YYYY HH:MM'
-      isValid = false
-    } else {
-      // Parse the Brazilian format and validate if it's a future date
-      const [datePart, timePart] = form.dataHora.split(' ')
-      const [day, month, year] = datePart.split('/')
-      const [hours, minutes] = timePart.split(':')
-      
-      const selectedDate = new Date(
-        parseInt(year),
-        parseInt(month) - 1, // Month is 0-indexed
-        parseInt(day),
-        parseInt(hours),
-        parseInt(minutes)
-      )
-      
-      const now = new Date()
-      
-      if (isNaN(selectedDate.getTime())) {
-        errors.dataHora = 'Data inválida'
-        isValid = false
-      } else if (selectedDate <= now) {
-        errors.dataHora = 'A data deve ser no futuro'
-        isValid = false
-      }
-    }
-  }
-
-  // Local (max 300 caracteres)
-  if (!form.local.trim()) {
-    errors.local = 'Local é obrigatório'
-    isValid = false
-  } else if (form.local.length > 300) {
-    errors.local = 'Local deve ter no máximo 300 caracteres'
-    isValid = false
-  }
-
-  // Categoria (obrigatória, deve ser um dos valores aceitos)
-  if (!form.categoria) {
-    errors.categoria = 'Categoria é obrigatória'
-    isValid = false
-  } else {
-    const validCategories = ['FUTEBOL', 'BASQUETEBOL', 'VOLEIBOL', 'MUSICA', 'TEATRO', 'DESPORTO', 'OUTROS']
-    if (!validCategories.includes(form.categoria)) {
-      errors.categoria = 'Categoria inválida'
-      isValid = false
-    }
-  }
-
-  // Capacidade Total
-  if (!form.capacidadeTotal || form.capacidadeTotal <= 0) {
-    errors.capacidadeTotal = 'Capacidade deve ser maior que zero'
-    isValid = false
-  }
-
-  return isValid
+  
+  return validation.isValid
 }
 
 const submitForm = async () => {
@@ -553,11 +474,14 @@ const submitForm = async () => {
   try {
     formLoading.value = true
 
+    // Convert Brazilian format to ISO 8601 format using centralized function
+    const isoDate = convertBrazilianToISO(form.dataHora)
+
     // Send data in the format expected by backend
     const eventData = {
       nome: form.nome,
       descricao: form.descricao,
-      dataHora: form.dataHora, // Brazilian format: dd/MM/yyyy HH:mm
+      dataEvento: isoDate, // Convert to ISO format
       local: form.local,
       categoria: form.categoria,
       capacidadeTotal: form.capacidadeTotal,
@@ -566,9 +490,9 @@ const submitForm = async () => {
     }
     
     console.log('✅ Form data before submission:', form)
-    console.log('✅ Event data being sent to API:', eventData)
+    console.log('✅ Event data being sent to API (ISO format):', eventData)
     console.log('✅ Selected categoria:', form.categoria)
-    console.log('✅ dataHora format:', eventData.dataHora)
+    console.log('✅ dataEvento ISO format:', eventData.dataEvento)
 
     if (isEditing.value) {
       const currentEvent = eventsStore.currentEvent

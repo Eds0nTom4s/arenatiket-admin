@@ -126,7 +126,7 @@
             <label class="block text-sm font-medium text-gray-700">Categoria do Bilhete</label>
             <p class="mt-1 text-sm text-gray-900">{{ currentTicket.categoriaBilhete.nome }}</p>
             <p class="mt-1 text-lg font-semibold text-primary-600">
-              € {{ currentTicket.categoriaBilhete.preco.toFixed(2) }}
+              Kz {{ currentTicket.categoriaBilhete.preco.toFixed(2) }}
             </p>
           </div>
           

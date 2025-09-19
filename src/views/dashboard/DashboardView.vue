@@ -25,100 +25,103 @@
     
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-      <!-- Available Tickets -->
-      <div class="card">
-        <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <div class="w-8 h-8 bg-indigo-100 rounded-md flex items-center justify-center">
-              <svg class="w-5 h-5 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M2 9a3 3 0 010-6h1.4l2.6 2.6L8.6 3H12v7l-4 4v1h8v-1l-4-4V3h3.4l2.6 2.6L20.6 3H22a3 3 0 010 6"/>
-              </svg>
+      <!-- Statistics for ADMIN only -->
+      <template v-if="authStore.isAdmin">
+        <!-- Available Tickets -->
+        <div class="card">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-indigo-100 rounded-md flex items-center justify-center">
+                <svg class="w-5 h-5 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M2 9a3 3 0 010-6h1.4l2.6 2.6L8.6 3H12v7l-4 4v1h8v-1l-4-4V3h3.4l2.6 2.6L20.6 3H22a3 3 0 010 6"/>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 truncate">
+                  Bilhetes Disponíveis
+                </dt>
+                <dd class="text-lg font-medium text-gray-900">
+                  {{ formatNumber(ticketCounts.DISPONIVEL || 0) }}
+                </dd>
+              </dl>
             </div>
           </div>
-          <div class="ml-5 w-0 flex-1">
-            <dl>
-              <dt class="text-sm font-medium text-gray-500 truncate">
-                Bilhetes Disponíveis
-              </dt>
-              <dd class="text-lg font-medium text-gray-900">
-                {{ formatNumber(ticketCounts.DISPONIVEL || 0) }}
-              </dd>
-            </dl>
-          </div>
         </div>
-      </div>
-      <!-- Sold Tickets -->
-      <div class="card">
-        <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <div class="w-8 h-8 bg-green-100 rounded-md flex items-center justify-center">
-              <svg class="w-5 h-5 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M2 9a3 3 0 010-6h1.4l2.6 2.6L8.6 3H12v7l-4 4v1h8v-1l-4-4V3h3.4l2.6 2.6L20.6 3H22a3 3 0 010 6"/>
-              </svg>
+        <!-- Sold Tickets -->
+        <div class="card">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-green-100 rounded-md flex items-center justify-center">
+                <svg class="w-5 h-5 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M2 9a3 3 0 010-6h1.4l2.6 2.6L8.6 3H12v7l-4 4v1h8v-1l-4-4V3h3.4l2.6 2.6L20.6 3H22a3 3 0 010 6"/>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 truncate">
+                  Bilhetes Vendidos
+                </dt>
+                <dd class="text-lg font-medium text-gray-900">
+                  {{ formatNumber(ticketCounts.VENDIDO || 0) }}
+                </dd>
+              </dl>
             </div>
           </div>
-          <div class="ml-5 w-0 flex-1">
-            <dl>
-              <dt class="text-sm font-medium text-gray-500 truncate">
-                Bilhetes Vendidos
-              </dt>
-              <dd class="text-lg font-medium text-gray-900">
-                {{ formatNumber(ticketCounts.VENDIDO || 0) }}
-              </dd>
-            </dl>
+        </div>
+        
+        <!-- Used Tickets -->
+        <div class="card">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-blue-100 rounded-md flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20,6 9,17 4,12"/>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 truncate">
+                  Bilhetes Usados
+                </dt>
+                <dd class="text-lg font-medium text-gray-900">
+                  {{ formatNumber(ticketCounts.USADO || 0) }}
+                </dd>
+              </dl>
+            </div>
           </div>
         </div>
-      </div>
+        
+        <!-- Cancelled Tickets -->
+        <div class="card">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-red-100 rounded-md flex items-center justify-center">
+                <svg class="w-5 h-5 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M15 9l-6 6"/>
+                  <path d="M9 9l6 6"/>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 truncate">
+                  Bilhetes Cancelados
+                </dt>
+                <dd class="text-lg font-medium text-gray-900">
+                  {{ formatNumber(ticketCounts.CANCELADO || 0) }}
+                </dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </template>
       
-      <!-- Used Tickets -->
-      <div class="card">
-        <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <div class="w-8 h-8 bg-blue-100 rounded-md flex items-center justify-center">
-              <svg class="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="20,6 9,17 4,12"/>
-              </svg>
-            </div>
-          </div>
-          <div class="ml-5 w-0 flex-1">
-            <dl>
-              <dt class="text-sm font-medium text-gray-500 truncate">
-                Bilhetes Usados
-              </dt>
-              <dd class="text-lg font-medium text-gray-900">
-                {{ formatNumber(ticketCounts.USADO || 0) }}
-              </dd>
-            </dl>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Cancelled Tickets -->
-      <div class="card">
-        <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <div class="w-8 h-8 bg-red-100 rounded-md flex items-center justify-center">
-              <svg class="w-5 h-5 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M15 9l-6 6"/>
-                <path d="M9 9l6 6"/>
-              </svg>
-            </div>
-          </div>
-          <div class="ml-5 w-0 flex-1">
-            <dl>
-              <dt class="text-sm font-medium text-gray-500 truncate">
-                Bilhetes Cancelados
-              </dt>
-              <dd class="text-lg font-medium text-gray-900">
-                {{ formatNumber(ticketCounts.CANCELADO || 0) }}
-              </dd>
-            </dl>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Active Events -->
+      <!-- Active Events - Available for all roles -->
       <div class="card">
         <div class="flex items-center">
           <div class="flex-shrink-0">
@@ -143,6 +146,83 @@
           </div>
         </div>
       </div>
+      
+      <!-- Additional cards for non-admin users -->
+      <template v-if="!authStore.isAdmin">
+        <!-- Total Events -->
+        <div class="card">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-indigo-100 rounded-md flex items-center justify-center">
+                <svg class="w-5 h-5 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 truncate">
+                  Total de Eventos
+                </dt>
+                <dd class="text-lg font-medium text-gray-900">
+                  {{ events?.length || 0 }}
+                </dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+        
+        <!-- User Role -->
+        <div class="card">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-green-100 rounded-md flex items-center justify-center">
+                <svg class="w-5 h-5 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 truncate">
+                  Perfil de Acesso
+                </dt>
+                <dd class="text-lg font-medium text-gray-900">
+                  {{ user?.role || 'N/A' }}
+                </dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+        
+        <!-- System Status -->
+        <div class="card">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-blue-100 rounded-md flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"/>
+                </svg>
+              </div>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 truncate">
+                  Status do Sistema
+                </dt>
+                <dd class="text-lg font-medium text-green-600">
+                  Online
+                </dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </template>
     </div>
     
     <!-- Quick Actions -->
@@ -367,25 +447,22 @@ const getEventStatusColor = (status: string) => {
 // Load data on mount
 onMounted(async () => {
   try {
-    // Ensure authentication is properly set up before making API calls
-    if (!authStore.isAuthenticated) {
-      console.log('Not authenticated, initializing auth...')
-      authStore.initializeAuth()
-    }
+    console.log('Loading dashboard data...')
     
-    // Verify token is available
-    if (!authStore.verifyToken()) {
-      console.error('No valid token available, cannot load dashboard data')
+    // Check authentication
+    if (!authStore.isAuthenticated || !authStore.token) {
+      console.error('User not authenticated')
+      router.push('/login')
       return
     }
-    
-    console.log('Loading dashboard data...')
     
     // Load recent events
     await eventsStore.fetchEvents({ page: 0, size: 10, status: 'ATIVO' })
     
-    // Load ticket counts  
-    await ticketsStore.fetchTicketCounts()
+    // Load ticket counts only for ADMIN
+    if (authStore.isAdmin) {
+      await ticketsStore.fetchTicketCounts()
+    }
     
     console.log('Dashboard data loaded successfully')
   } catch (error) {

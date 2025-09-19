@@ -271,13 +271,13 @@ export function validateQRCode(qrCode: string): boolean {
 }
 
 /**
- * Format currency for display (Portuguese format)
+ * Format currency for display (Angolan Kwanza format)
  */
 export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('pt-PT', {
+  return new Intl.NumberFormat('pt-AO', {
     style: 'currency',
-    currency: 'EUR'
-  }).format(value)
+    currency: 'AOA'
+  }).format(value).replace('AOA', 'Kz')
 }
 
 /**

@@ -273,7 +273,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <BaseInput
             v-model.number="loteForm.preco"
-            label="Preço (€)"
+            label="Preço (Kz)"
             type="number"
             step="0.01"
             min="0"
@@ -640,7 +640,7 @@ const validateForm = (): boolean => {
   if (!loteForm.preco || loteForm.preco <= 0) {
     errors.value.preco = 'Preço deve ser maior que zero'
   } else if (loteForm.preco > 999999.99) {
-    errors.value.preco = 'Preço não pode exceder 999.999,99 €'
+    errors.value.preco = 'Preço não pode exceder 999.999,99 Kz'
   }
   
   // Validação da quantidade
@@ -713,7 +713,7 @@ const confirmDelete = async () => {
 }
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(value)
+  return new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA' }).format(value).replace('AOA', 'Kz')
 }
 
 const formatDate = (dateString?: string | null) => {

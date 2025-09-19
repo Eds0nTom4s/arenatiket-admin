@@ -50,17 +50,17 @@ export interface Event {
   id: number
   nome: string
   descricao: string
-  dataEvento: string   // Primary field - ISO 8601 format
+  dataHora: string   // Primary field - ISO 8601 format (real API field)
   local: string
   categoria: string
-  status: 'ATIVO' | 'INATIVO' | 'ESGOTADO'
-  capacidadeTotal: number
-  bilhetesVendidos: number
+  ativo: boolean     // Real API field (not status)
+  capacidadeTotal?: number
+  bilhetesVendidos?: number
   precoMinimo?: number
   precoMaximo?: number
   imagemUrl?: string
   dataCriacao?: string
-  ativo?: boolean
+  dataAtualizacao?: string | null
 }
 
 export interface CreateEventRequest {

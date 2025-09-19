@@ -2,6 +2,7 @@
   <div id="app">
     <router-view />
     <ToastContainer />
+    <DevLoginHelper />
   </div>
 </template>
 
@@ -9,6 +10,7 @@
 import { onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import ToastContainer from '@/components/base/ToastContainer.vue'
+import DevLoginHelper from '@/components/dev/DevLoginHelper.vue'
 
 const authStore = useAuthStore()
 

@@ -7,11 +7,11 @@
           <p class="text-gray-600 mt-1">Acompanhe todos os pedidos do sistema</p>
         </div>
         <div class="flex space-x-2">
-          <BaseButton @click="refreshOrders" variant="outline">
+          <BaseButton @click="refreshOrders" variant="outline" text="Atualizar">
             <i class="fas fa-sync mr-2"></i>
             Atualizar
           </BaseButton>
-          <BaseButton @click="exportOrders" variant="secondary">
+          <BaseButton @click="exportOrders" variant="secondary" text="Exportar">
             <i class="fas fa-download mr-2"></i>
             Exportar
           </BaseButton>
@@ -68,11 +68,11 @@
           </select>
         </div>
         <div class="flex items-end">
-          <BaseButton @click="loadOrders" variant="secondary" class="mr-2">
+          <BaseButton @click="loadOrders" variant="secondary" class="mr-2" text="Buscar">
             <i class="fas fa-search mr-2"></i>
             Buscar
           </BaseButton>
-          <BaseButton @click="clearFilters" variant="outline">
+          <BaseButton @click="clearFilters" variant="outline" text="Limpar">
             <i class="fas fa-times mr-2"></i>
             Limpar
           </BaseButton>
@@ -116,7 +116,7 @@
         <div class="flex items-center">
           <div class="flex-shrink-0">
             <div class="flex items-center justify-center h-12 w-12 rounded-md bg-green-500 text-white">
-              <i class="fas fa-euro-sign"></i>
+              <i class="fas fa-coins"></i>
             </div>
           </div>
           <div class="ml-5 w-0 flex-1">
@@ -236,6 +236,7 @@
               variant="ghost"
               size="sm"
               title="Ver Detalhes"
+              text=""
             >
               <i class="fas fa-eye"></i>
             </BaseButton>
@@ -246,6 +247,7 @@
               size="sm"
               title="Confirmar"
               class="text-green-600 hover:text-green-700"
+              text=""
             >
               <i class="fas fa-check"></i>
             </BaseButton>
@@ -256,6 +258,7 @@
               size="sm"
               title="Cancelar"
               class="text-red-600 hover:text-red-700"
+              text=""
             >
               <i class="fas fa-times"></i>
             </BaseButton>
@@ -264,6 +267,7 @@
               variant="ghost"
               size="sm"
               title="Imprimir"
+              text=""
             >
               <i class="fas fa-print"></i>
             </BaseButton>
@@ -422,11 +426,11 @@
 
         <!-- Ações -->
         <div class="flex justify-end space-x-3 pt-4 border-t">
-          <BaseButton @click="printOrder(selectedOrder)" variant="outline">
+          <BaseButton @click="printOrder(selectedOrder)" variant="outline" text="Imprimir Pedido">
             <i class="fas fa-print mr-2"></i>
             Imprimir Pedido
           </BaseButton>
-          <BaseButton @click="showDetailsModal = false" variant="primary">
+          <BaseButton @click="showDetailsModal = false" variant="primary" text="Fechar">
             Fechar
           </BaseButton>
         </div>
@@ -452,10 +456,10 @@
           Esta ação não pode ser desfeita.
         </p>
         <div class="flex justify-center space-x-3">
-          <BaseButton @click="showCancelModal = false" variant="outline">
+          <BaseButton @click="showCancelModal = false" variant="outline" text="Não">
             Não
           </BaseButton>
-          <BaseButton @click="confirmCancelOrder" variant="danger" :loading="pedidosStore.loading">
+          <BaseButton @click="confirmCancelOrder" variant="danger" :loading="pedidosStore.loading" text="Sim, Cancelar">
             Sim, Cancelar
           </BaseButton>
         </div>
@@ -676,7 +680,7 @@ const getStatusLabel = (status: string) => {
 }
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(value)
+  return new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA' }).format(value).replace('AOA', 'Kz')
 }
 
 const formatDate = (dateString: string) => {

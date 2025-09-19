@@ -82,7 +82,7 @@
         <div class="flex items-center">
           <div class="flex-shrink-0">
             <div class="flex items-center justify-center h-12 w-12 rounded-md bg-yellow-500 text-white">
-              <i class="fas fa-euro-sign"></i>
+              <i class="fas fa-coins"></i>
             </div>
           </div>
           <div class="ml-5 w-0 flex-1">
@@ -425,7 +425,7 @@ const createSalesByDayChart = () => {
     data: {
       labels: data.map(item => formatChartDate(item.data)),
       datasets: [{
-        label: 'Receita (€)',
+        label: 'Receita (Kz)',
         data: data.map(item => item.valorVendas),
         borderColor: 'rgb(59, 130, 246)',
         backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -454,7 +454,7 @@ const createSalesByDayChart = () => {
           position: 'left',
           title: {
             display: true,
-            text: 'Receita (€)'
+            text: 'Receita (Kz)'
           }
         },
         y1: {
@@ -560,7 +560,7 @@ const printReport = () => {
 }
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(value)
+  return new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA' }).format(value).replace('AOA', 'Kz')
 }
 
 const formatDate = (dateString: string) => {

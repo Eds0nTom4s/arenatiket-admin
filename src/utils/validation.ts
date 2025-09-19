@@ -80,7 +80,12 @@ export const VALID_TICKET_STATUSES = [
  * According to backend corrections - now expects ISO format
  */
 export function convertBrazilianToISO(brazilianDate: string): string {
+  if (!brazilianDate || brazilianDate.trim() === '') {
+    throw new Error('Data não fornecida')
+  }
+  
   if (!VALIDATION_PATTERNS.BRAZILIAN_DATE.test(brazilianDate)) {
+    console.warn('Invalid date format:', brazilianDate)
     throw new Error('Formato de data inválido. Use: DD/MM/YYYY HH:MM')
   }
 
@@ -88,6 +93,7 @@ export function convertBrazilianToISO(brazilianDate: string): string {
   const [day, month, year] = datePart.split('/')
   const [hours, minutes] = timePart.split(':')
   
+  // Create date in local timezone first, then convert to ISO
   const date = new Date(
     parseInt(year),
     parseInt(month) - 1, // Month is 0-indexed
@@ -100,7 +106,31 @@ export function convertBrazilianToISO(brazilianDate: string): string {
     throw new Error('Data inválida')
   }
 
-  return date.toISOString()
+  // Log timezone information for debugging
+  console.log('🔍 Date conversion debug:')
+  console.log('🔍 Input:', brazilianDate)
+  console.log('🔍 Local date object:', date)
+  console.log('🔍 Local timezone offset:', date.getTimezoneOffset())
+  console.log('🔍 ISO string:', date.toISOString())
+  
+  // For backend compatibility, we want to send the date as if it were in UTC
+  // but representing the local time
+  const utcDate = new Date(
+    parseInt(year),
+    parseInt(month) - 1,
+    parseInt(day),
+    parseInt(hours),
+    parseInt(minutes)
+  )
+  
+  // Adjust for timezone to ensure backend receives the intended local time
+  const timezoneOffset = utcDate.getTimezoneOffset() * 60000 // Convert to milliseconds
+  const adjustedDate = new Date(utcDate.getTime() - timezoneOffset)
+  
+  const isoString = adjustedDate.toISOString()
+  console.log('🔍 Final ISO string (timezone adjusted):', isoString)
+  
+  return isoString
 }
 
 /**

@@ -169,6 +169,24 @@
             <p class="mt-2 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
               ℹ️ Selecione a data e hora em campos separados para maior precisão
             </p>
+            
+            <!-- Fallback: Simple text input for manual entry -->
+            <details class="mt-2">
+              <summary class="text-xs text-gray-600 cursor-pointer hover:text-gray-800">
+                🛠️ Entrada manual (DD/MM/AAAA HH:MM)
+              </summary>
+              <div class="mt-2">
+                <input
+                  v-model="form.dataHora"
+                  type="text"
+                  placeholder="Ex: 25/12/2024 15:30"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <p class="mt-1 text-xs text-gray-500">
+                  Formato: DD/MM/AAAA HH:MM (Ex: 25/12/2024 15:30)
+                </p>
+              </div>
+            </details>
           </div>
           
           <!-- Location -->
@@ -456,11 +474,18 @@ const clearAllErrors = () => {
 const validateForm = () => {
   clearAllErrors()
   
+  // Debug: Check form.dataHora before validation
+  console.log('🔍 validateForm - form.dataHora:', form.dataHora)
+  console.log('🔍 validateForm - form object:', JSON.stringify(form, null, 2))
+  
   // Use centralized validation
   const validation = validateEvent(form)
   
   if (!validation.isValid) {
+    console.log('❌ validateForm - Validation failed:', validation.errors)
     Object.assign(errors, validation.errors)
+  } else {
+    console.log('✅ validateForm - Validation passed')
   }
   
   return validation.isValid
@@ -474,25 +499,48 @@ const submitForm = async () => {
   try {
     formLoading.value = true
 
-    // Convert Brazilian format to ISO 8601 format using centralized function
-    const isoDate = convertBrazilianToISO(form.dataHora)
+    // Debug: Log form data before conversion
+    console.log('🔍 DEBUG - Form dataHora before conversion:', form.dataHora)
+    console.log('🔍 DEBUG - Type of form.dataHora:', typeof form.dataHora)
+    console.log('🔍 DEBUG - Full form object:', JSON.stringify(form, null, 2))
 
-    // Send data in the format expected by backend
+    // Check if dataHora is empty or invalid
+    if (!form.dataHora || form.dataHora.trim() === '') {
+      console.error('❌ ERROR - form.dataHora is empty!')
+      errors.dataHora = 'Data e hora são obrigatórias'
+      return
+    }
+
+    // Convert Brazilian format to ISO 8601 format using centralized function
+    let isoDate: string
+    try {
+      isoDate = convertBrazilianToISO(form.dataHora)
+      console.log('✅ DEBUG - ISO date after conversion:', isoDate)
+    } catch (conversionError) {
+      console.error('❌ ERROR - Date conversion failed:', conversionError)
+      errors.dataHora = 'Erro na conversão da data. Verifique o formato.'
+      return
+    }
+
+    // Send data in the format expected by backend (following the provided example exactly)
     const eventData = {
       nome: form.nome,
-      descricao: form.descricao,
-      dataEvento: isoDate, // Convert to ISO format
+      dataHora: isoDate, // Backend expects dataHora, not dataEvento!
       local: form.local,
       categoria: form.categoria,
-      capacidadeTotal: form.capacidadeTotal,
-      imagemUrl: form.imagemUrl,
       ativo: form.ativo
     }
     
+    // Only include descricao if it's not empty
+    if (form.descricao && form.descricao.trim() !== '') {
+      eventData.descricao = form.descricao
+    }
+    
     console.log('✅ Form data before submission:', form)
-    console.log('✅ Event data being sent to API (ISO format):', eventData)
+    console.log('✅ Event data being sent to API (dataHora format):', eventData)
     console.log('✅ Selected categoria:', form.categoria)
-    console.log('✅ dataEvento ISO format:', eventData.dataEvento)
+    console.log('✅ dataHora ISO format:', eventData.dataHora)
+    console.log('🚀 Final payload being sent to backend:', JSON.stringify(eventData, null, 2))
 
     if (isEditing.value) {
       const currentEvent = eventsStore.currentEvent
@@ -516,6 +564,28 @@ const submitForm = async () => {
   } catch (error: any) {
     console.error('❌ Error submitting form:', error)
     console.error('❌ Error response data:', error.response?.data)
+    console.error('❌ Full error object:', JSON.stringify(error, null, 2))
+    
+    // Show specific validation errors to user
+    if (error.response?.status === 400 && error.response?.data?.dados) {
+      const validationErrors = error.response.data.dados
+      console.log('🔍 Validation errors from backend:', validationErrors)
+      
+      // Map backend validation errors to form fields
+      Object.keys(validationErrors).forEach(field => {
+        if (field in errors) {
+          errors[field as keyof typeof errors] = validationErrors[field]
+        }
+      })
+      
+      // Show generic error if no specific field errors
+      if (Object.keys(validationErrors).length === 0) {
+        errors.nome = 'Erro de validação no servidor. Verifique os dados.'
+      }
+    } else {
+      // Generic error handling
+      errors.nome = error.response?.data?.mensagem || 'Erro ao criar evento. Tente novamente.'
+    }
   } finally {
     formLoading.value = false
   }

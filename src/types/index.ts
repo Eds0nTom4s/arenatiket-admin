@@ -31,14 +31,12 @@ export interface LoginCredentials {
 
 export interface LoginResponse {
   token: string
-  tipo: string
-  usuario: {
-    id: number
-    nome: string
-    email: string
-    role: 'ADMIN' | 'VENDEDOR' | 'PORTEIRO'
-    ativo?: boolean
-  }
+  type: string
+  id: number
+  nome: string
+  email: string
+  role: 'ADMIN' | 'VENDEDOR' | 'PORTEIRO'
+  ativo?: boolean
 }
 
 export interface CreateUserRequest {
@@ -68,11 +66,9 @@ export interface Event {
 export interface CreateEventRequest {
   nome: string
   descricao?: string
-  dataEvento: string  // ISO 8601 format: yyyy-MM-ddTHH:mm:ss
+  dataHora: string  // ISO 8601 format: yyyy-MM-ddTHH:mm:ss (backend expects dataHora, not dataEvento)
   local: string
-  categoria?: string
-  capacidadeTotal?: number
-  imagemUrl?: string
+  categoria: string
   ativo?: boolean
 }
 

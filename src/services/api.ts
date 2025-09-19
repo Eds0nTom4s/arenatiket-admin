@@ -122,8 +122,13 @@ apiClient.interceptors.response.use(
 export class ApiService {
   // Autenticação
   static async login(credentials: LoginCredentials): Promise<LoginResponse> {
+    console.log('Making login request with credentials:', { email: credentials.email, senha: '***' })
     const response = await apiClient.post<ApiResponse<LoginResponse>>('/auth/login', credentials)
     console.log('Raw API Response:', response.data)
+    console.log('Response status:', response.status)
+    console.log('Response data keys:', Object.keys(response.data))
+    console.log('Response dados:', response.data.dados)
+    console.log('Response dados keys:', Object.keys(response.data.dados || {}))
     return response.data.dados
   }
 
@@ -185,8 +190,18 @@ export class ApiService {
   static async createEvent(eventData: CreateEventRequest): Promise<Event> {
     console.log('API Service - Creating event with data:', eventData)
     console.log('API Service - Event data keys:', Object.keys(eventData))
-    const response = await apiClient.post<ApiResponse<Event>>('/admin/eventos', eventData)
-    return response.data.dados
+    
+    try {
+      const response = await apiClient.post<ApiResponse<Event>>('/admin/eventos', eventData)
+      return response.data.dados
+    } catch (error: any) {
+      console.error('🔴 API Service - Event creation failed')
+      console.error('🔴 Error status:', error.response?.status)
+      console.error('🔴 Error message:', error.response?.data?.mensagem)
+      console.error('🔴 Validation details:', error.response?.data?.dados)
+      console.error('🔴 Full error response:', JSON.stringify(error.response?.data, null, 2))
+      throw error
+    }
   }
 
   static async updateEvent(id: number, eventData: Partial<CreateEventRequest>): Promise<Event> {

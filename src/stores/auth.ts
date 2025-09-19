@@ -25,23 +25,50 @@ export const useAuthStore = defineStore('auth', () => {
       
       // Debug: log the response to see its structure
       console.log('Login response:', response)
+      console.log('Response keys:', Object.keys(response || {}))
+      console.log('Has token:', !!response?.token)
+      console.log('Has id:', !!response?.id)
+      console.log('Response type:', typeof response)
       
       // Check if response has the expected structure according to API Contract
-      if (!response || !response.token || !response.usuario) {
-        throw new Error('Resposta da API inválida - estrutura incorreta')
+      // The response should have: { token, type?, id, nome, email, role }
+      if (!response || typeof response !== 'object') {
+        console.error('Invalid response: not an object', response)
+        throw new Error('Resposta da API inválida - não é um objeto')
       }
       
-      // Extract user data from response.usuario
+      if (!response.token || typeof response.token !== 'string') {
+        console.error('Invalid response: missing or invalid token', response)
+        throw new Error('Resposta da API inválida - token ausente ou inválido')
+      }
+      
+      // Validate user data fields (directly in response)
+      if (!response.id || typeof response.id !== 'number') {
+        console.error('Invalid user ID:', response.id)
+        throw new Error('ID do usuário inválido na resposta da API')
+      }
+      
+      if (!response.nome || typeof response.nome !== 'string') {
+        console.error('Invalid user name:', response.nome)
+        throw new Error('Nome do usuário inválido na resposta da API')
+      }
+      
+      if (!response.email || typeof response.email !== 'string') {
+        console.error('Invalid user email:', response.email)
+        throw new Error('Email do usuário inválido na resposta da API')
+      }
+      
+      if (!response.role || !['ADMIN', 'VENDEDOR', 'PORTEIRO'].includes(response.role)) {
+        console.error('Invalid user role:', response.role)
+        throw new Error('Role do usuário inválido na resposta da API')
+      }
+      
       const usuario = {
-        id: response.usuario.id,
-        nome: response.usuario.nome,
-        email: response.usuario.email,
-        role: response.usuario.role,
-        ativo: response.usuario.ativo || true
-      }
-      
-      if (!usuario.nome || !usuario.email || !usuario.role) {
-        throw new Error('Dados do usuário incompletos na resposta da API')
+        id: response.id,
+        nome: response.nome,
+        email: response.email,
+        role: response.role,
+        ativo: response.ativo !== false // Default to true if not specified
       }
       
       // Store in localStorage FIRST

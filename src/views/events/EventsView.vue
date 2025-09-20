@@ -331,13 +331,6 @@ const modalTitle = computed(() => {
   return isEditing.value ? 'Editar Evento' : 'Novo Evento'
 })
 
-// Watch categoria changes (apenas para debug se necessário)
-watch(() => form.categoria, (newCategoria) => {
-  if (newCategoria) {
-    console.log('✅ Categoria selecionada:', newCategoria)
-  }
-})
-
 // Methods
 const loadEvents = async () => {
   try {
@@ -347,7 +340,6 @@ const loadEvents = async () => {
       ...(filters.status && { status: filters.status })
     })
   } catch (error) {
-    console.error('Error loading events:', error)
   }
 }
 
@@ -475,17 +467,11 @@ const validateForm = () => {
   clearAllErrors()
   
   // Debug: Check form.dataHora before validation
-  console.log('🔍 validateForm - form.dataHora:', form.dataHora)
-  console.log('🔍 validateForm - form object:', JSON.stringify(form, null, 2))
-  
   // Use centralized validation
   const validation = validateEvent(form)
   
   if (!validation.isValid) {
-    console.log('❌ validateForm - Validation failed:', validation.errors)
     Object.assign(errors, validation.errors)
-  } else {
-    console.log('✅ validateForm - Validation passed')
   }
   
   return validation.isValid
@@ -499,14 +485,8 @@ const submitForm = async () => {
   try {
     formLoading.value = true
 
-    // Debug: Log form data before conversion
-    console.log('🔍 DEBUG - Form dataHora before conversion:', form.dataHora)
-    console.log('🔍 DEBUG - Type of form.dataHora:', typeof form.dataHora)
-    console.log('🔍 DEBUG - Full form object:', JSON.stringify(form, null, 2))
-
     // Check if dataHora is empty or invalid
     if (!form.dataHora || form.dataHora.trim() === '') {
-      console.error('❌ ERROR - form.dataHora is empty!')
       errors.dataHora = 'Data e hora são obrigatórias'
       return
     }
@@ -515,9 +495,7 @@ const submitForm = async () => {
     let isoDate: string
     try {
       isoDate = convertBrazilianToISO(form.dataHora)
-      console.log('✅ DEBUG - ISO date after conversion:', isoDate)
     } catch (conversionError) {
-      console.error('❌ ERROR - Date conversion failed:', conversionError)
       errors.dataHora = 'Erro na conversão da data. Verifique o formato.'
       return
     }
@@ -536,21 +514,11 @@ const submitForm = async () => {
       eventData.descricao = form.descricao
     }
     
-    console.log('✅ Form data before submission:', form)
-    console.log('✅ Event data being sent to API (dataHora format):', eventData)
-    console.log('✅ Selected categoria:', form.categoria)
-    console.log('✅ dataHora ISO format:', eventData.dataHora)
-    console.log('🚀 Final payload being sent to backend:', JSON.stringify(eventData, null, 2))
-
-    if (isEditing.value) {
-      const currentEvent = eventsStore.currentEvent
-      if (currentEvent) {
-        await eventsStore.updateEvent(currentEvent.id, eventData)
-      }
+    let createdEvent
+    if (isEditing.value && currentEvent.value) {
+      createdEvent = await eventsStore.updateEvent(currentEvent.value.id, eventData)
     } else {
-      const createdEvent = await eventsStore.createEvent(eventData as CreateEventRequest)
-      console.log('✅ Event created successfully:', createdEvent)
-      console.log('✅ Created event categoria:', createdEvent?.categoria)
+      createdEvent = await eventsStore.createEvent(eventData)
     }
 
     closeModal()
@@ -559,17 +527,12 @@ const submitForm = async () => {
     try {
       await loadEvents()
     } catch (reloadError) {
-      console.warn('Warning: Could not reload events after creation/update:', reloadError)
+      // Silent error handling
     }
   } catch (error: any) {
-    console.error('❌ Error submitting form:', error)
-    console.error('❌ Error response data:', error.response?.data)
-    console.error('❌ Full error object:', JSON.stringify(error, null, 2))
-    
     // Show specific validation errors to user
     if (error.response?.status === 400 && error.response?.data?.dados) {
       const validationErrors = error.response.data.dados
-      console.log('🔍 Validation errors from backend:', validationErrors)
       
       // Map backend validation errors to form fields
       Object.keys(validationErrors).forEach(field => {

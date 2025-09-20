@@ -23,17 +23,9 @@ export const useAuthStore = defineStore('auth', () => {
       loading.value = true
       const response = await ApiService.login(credentials)
       
-      // Debug: log the response to see its structure
-      console.log('Login response:', response)
-      console.log('Response keys:', Object.keys(response || {}))
-      console.log('Has token:', !!response?.token)
-      console.log('Has id:', !!response?.id)
-      console.log('Response type:', typeof response)
-      
       // Check if response has the expected structure according to API Contract
       // The response should have: { token, type?, id, nome, email, role }
       if (!response || typeof response !== 'object') {
-        console.error('Invalid response: not an object', response)
         throw new Error('Resposta da API inválida - não é um objeto')
       }
       

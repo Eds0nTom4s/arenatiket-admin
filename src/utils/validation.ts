@@ -85,7 +85,6 @@ export function convertBrazilianToISO(brazilianDate: string): string {
   }
   
   if (!VALIDATION_PATTERNS.BRAZILIAN_DATE.test(brazilianDate)) {
-    console.warn('Invalid date format:', brazilianDate)
     throw new Error('Formato de data inválido. Use: DD/MM/YYYY HH:MM')
   }
 
@@ -106,12 +105,7 @@ export function convertBrazilianToISO(brazilianDate: string): string {
     throw new Error('Data inválida')
   }
 
-  // Log timezone information for debugging
-  console.log('🔍 Date conversion debug:')
-  console.log('🔍 Input:', brazilianDate)
-  console.log('🔍 Local date object:', date)
-  console.log('🔍 Local timezone offset:', date.getTimezoneOffset())
-  console.log('🔍 ISO string:', date.toISOString())
+
   
   // For backend compatibility, we want to send the date as if it were in UTC
   // but representing the local time
@@ -127,10 +121,7 @@ export function convertBrazilianToISO(brazilianDate: string): string {
   const timezoneOffset = utcDate.getTimezoneOffset() * 60000 // Convert to milliseconds
   const adjustedDate = new Date(utcDate.getTime() - timezoneOffset)
   
-  const isoString = adjustedDate.toISOString()
-  console.log('🔍 Final ISO string (timezone adjusted):', isoString)
-  
-  return isoString
+  return adjustedDate.toISOString()
 }
 
 /**
@@ -142,7 +133,6 @@ export function convertISOToBrazilian(isoDate: string): string {
   const date = new Date(isoDate)
   
   if (isNaN(date.getTime())) {
-    console.warn('Invalid ISO date:', isoDate)
     return isoDate
   }
   

@@ -23,8 +23,6 @@ export const useLotesStore = defineStore('lotes', () => {
       }
       const response = await ApiService.getLotes(requestParams)
       
-      console.log('Raw API response for lotes:', response)
-      
       if (Array.isArray(response)) {
         lotes.value = response
         totalElements.value = response.length
@@ -33,11 +31,6 @@ export const useLotesStore = defineStore('lotes', () => {
         lotes.value = response.content || []
         totalElements.value = response.pageable?.totalElements || 0
         totalPages.value = response.pageable?.totalPages || 1
-      }
-      
-      // Log first lot structure for debugging
-      if (lotes.value.length > 0) {
-        console.log('First lot structure:', JSON.stringify(lotes.value[0], null, 2))
       }
     } catch (error) {
       console.error('Erro ao buscar lotes:', error)

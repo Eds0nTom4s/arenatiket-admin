@@ -364,7 +364,6 @@ const updateBrazilianDateTime = (selectedDate: Date | null) => {
 const updateDateOnly = (selectedDate: Date | null) => {
   if (props.type === 'datetime-brazilian') {
     dateOnlyValue.value = selectedDate
-    console.log('🔍 BaseInput - Date selected:', selectedDate)
     updateSeparatedDateTime()
   }
 }
@@ -373,17 +372,12 @@ const updateDateOnly = (selectedDate: Date | null) => {
 const updateTimeOnly = (selectedTime: { hours: number; minutes: number; seconds?: number } | null) => {
   if (props.type === 'datetime-brazilian') {
     timeOnlyValue.value = selectedTime
-    console.log('🔍 BaseInput - Time selected:', selectedTime)
     updateSeparatedDateTime()
   }
 }
 
 // Combine date and time into Brazilian format
 const updateSeparatedDateTime = () => {
-  console.log('🔍 BaseInput DEBUG - updateSeparatedDateTime called')
-  console.log('🔍 BaseInput DEBUG - dateOnlyValue:', dateOnlyValue.value)
-  console.log('🔍 BaseInput DEBUG - timeOnlyValue:', timeOnlyValue.value)
-  
   if (dateOnlyValue.value && timeOnlyValue.value) {
     const day = dateOnlyValue.value.getDate().toString().padStart(2, '0')
     const month = (dateOnlyValue.value.getMonth() + 1).toString().padStart(2, '0')
@@ -392,7 +386,6 @@ const updateSeparatedDateTime = () => {
     const minutes = timeOnlyValue.value.minutes.toString().padStart(2, '0')
     
     const brazilianFormat = `${day}/${month}/${year} ${hours}:${minutes}`
-    console.log('✅ BaseInput DEBUG - Generated Brazilian format:', brazilianFormat)
     emit('update:modelValue', brazilianFormat)
   } else if (dateOnlyValue.value && !timeOnlyValue.value) {
     // Date selected but no time - set default time to current hour
@@ -404,17 +397,14 @@ const updateSeparatedDateTime = () => {
     const minutes = '00' // Default to :00
     
     const brazilianFormat = `${day}/${month}/${year} ${hours}:${minutes}`
-    console.log('⚠️ BaseInput DEBUG - Date only, using default time:', brazilianFormat)
     
     // Also set the time picker to the default time
     timeOnlyValue.value = { hours: now.getHours(), minutes: 0 }
     
     emit('update:modelValue', brazilianFormat)
   } else if (!dateOnlyValue.value && !timeOnlyValue.value) {
-    console.log('⚠️ BaseInput DEBUG - Both date and time are null, emitting empty string')
     emit('update:modelValue', '')
   } else {
-    console.log('⚠️ BaseInput DEBUG - Partial data - Date:', !!dateOnlyValue.value, 'Time:', !!timeOnlyValue.value)
     // Don't emit anything if only time is selected without date
   }
 }

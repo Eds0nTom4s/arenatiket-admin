@@ -50,7 +50,6 @@ export const useEventsStore = defineStore('events', () => {
         }
       } else {
         // Fallback for unexpected response structure
-        console.warn('Unexpected events API response structure:', response)
         events.value = []
         pagination.value = {
           page: 0,
@@ -78,7 +77,6 @@ export const useEventsStore = defineStore('events', () => {
       currentEvent.value = event
       return event
     } catch (error) {
-      console.error('Error fetching event:', error)
       throw error
     } finally {
       loading.value = false
@@ -88,12 +86,8 @@ export const useEventsStore = defineStore('events', () => {
   const createEvent = async (eventData: CreateEventRequest) => {
     try {
       loading.value = true
-      console.log('🚀 Creating event with data:', eventData)
-      console.log('🚀 Event categoria being sent:', eventData.categoria)
       
       const newEvent = await ApiService.createEvent(eventData)
-      console.log('✅ Event created, received back:', newEvent)
-      console.log('✅ Received categoria:', newEvent?.categoria)
       
       // Ensure events array is initialized
       if (!Array.isArray(events.value)) {
@@ -119,12 +113,8 @@ export const useEventsStore = defineStore('events', () => {
   const updateEvent = async (id: number, eventData: Partial<CreateEventRequest>) => {
     try {
       loading.value = true
-      console.log('🔄 Updating event with data:', eventData)
-      console.log('🔄 Event categoria being sent:', eventData.categoria)
       
       const updatedEvent = await ApiService.updateEvent(id, eventData)
-      console.log('✅ Event updated, received back:', updatedEvent)
-      console.log('✅ Updated categoria:', updatedEvent?.categoria)
       
       // Ensure events array is initialized
       if (!Array.isArray(events.value)) {

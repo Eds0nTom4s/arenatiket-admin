@@ -428,41 +428,21 @@ const totalSavings = computed(() => {
 // Methods
 const loadEventos = async () => {
   try {
-    console.log('🔄 Carregando eventos...')
     const response = await eventsStore.fetchEvents()
-    console.log('📦 Resposta da API:', response)
-    console.log('📦 Tipo da resposta:', typeof response)
-    console.log('📦 É array?', Array.isArray(response))
     
     if (Array.isArray(response)) {
-      console.log('✅ Resposta é array, total de eventos:', response.length)
-      console.log('🔍 Primeiro evento (estrutura):', response[0])
-      
-      const eventosAtivos = response.filter(evento => {
-        console.log(`🎯 Evento ${evento.nome}: ativo = ${evento.ativo}`)
-        return evento.ativo === true
-      })
-      
+      const eventosAtivos = response.filter(evento => evento.ativo === true)
       eventos.value = eventosAtivos
-      console.log('✅ Eventos ativos filtrados:', eventosAtivos.length)
     } else if (response && response.content && Array.isArray(response.content)) {
-      console.log('✅ Resposta tem propriedade content, filtrando eventos ativos...')
       eventos.value = response.content.filter(evento => evento.ativo === true)
     } else {
-      console.warn('⚠️ Estrutura de resposta inesperada:', response)
       eventos.value = []
     }
     
-    console.log('📋 Eventos carregados na variável:', eventos.value.length)
-    console.log('🎯 Eventos na variável:', eventos.value)
-    console.log('🔄 Forçando reatividade...')
-    
     // Forçar reatividade
     await new Promise(resolve => setTimeout(resolve, 100))
-    console.log('✅ Eventos após timeout:', eventos.value.length)
     
   } catch (error) {
-    console.error('❌ Erro ao carregar eventos:', error)
     eventos.value = []
   }
 }
